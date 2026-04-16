@@ -14,7 +14,15 @@ from aiida.parsers.parser import Parser
 from aiida.plugins import CalculationFactory
 
 from ..common import make_retrieve_list
-from .raw_parsers import AbacusRawParser, InternalParametersParser, KpointsParser, StruParser, WarningLogParser
+from .raw_parsers import (
+    AbacusRawParser,
+    InternalParametersParser,
+    KpointsParser,
+    PdosParser,
+    StruParser,
+    TimejsonParser,
+    WarningLogParser,
+)
 
 
 class ParserError(RuntimeError):
@@ -39,6 +47,10 @@ DEFAULT_OUTPUT_SETTINGS = {
     "bands": False,
     "internal_parameters": False,
     "kpoints": False,
+    "pdos": False,
+    "time_json": False,
+    "eigenvalues": False,
+    "mulliken": False,
 }
 
 RELAX_RUN_TYPES = {"relax", "cell-relax", "md"}
@@ -129,19 +141,9 @@ class AbacusParser(Parser):
             return self.exit_codes.ERROR_MISSING_OUTPUT_FILES
 
         # Parse warning.log if available
-        folder_name = "OUT." + output_suffix
-        warning_log_path = folder_name + "/warning.log"
-        warning_notifications = []
-        try:
-            with output_folder.open(warning_log_path, "r") as fhandle:
-                warning_parser = WarningLogParser(fhandle)
-                warning_notifications = warning_parser.parse()
-        except FileNotFoundError:
-            pass
-        except Exception as exc:
-            self.logger.warning(f"Failed to parse warning.log: {exc}")
-
+        warning_notifications = self._parse_warning_log(output_folder, output_suffix)
         misc_results["warnings"] = self._merge_warnings(warning_notifications, raw_parser.parse_runtime_warnings())
+        misc_results.update(self._parse_time_json(output_folder, output_suffix))
 
         misc_node = orm.Dict(dict=misc_results)
 
@@ -195,6 +197,11 @@ class AbacusParser(Parser):
             node.set_cell_from_structure(self.node.inputs.structure)
             self.out("kpoints", node)
 
+        if self.check_include_node("pdos"):
+            pdos_data = self._parse_pdos(output_folder, output_suffix)
+            if pdos_data is not None:
+                self.out("pdos", orm.Dict(dict=pdos_data))
+
         # Define the output nodes
         self.out("misc", misc_node)
 
@@ -211,6 +218,51 @@ class AbacusParser(Parser):
             mandatory.append(f"{folder_name}/kpoints")
 
         return mandatory
+
+    def _parse_warning_log(self, output_folder: orm.FolderData, output_suffix: str) -> list[dict]:
+        """Parse warning.log if present."""
+        folder_name = "OUT." + output_suffix
+        warning_log_path = folder_name + "/warning.log"
+        try:
+            with output_folder.open(warning_log_path, "r") as fhandle:
+                warning_parser = WarningLogParser(fhandle)
+                return warning_parser.parse()
+        except FileNotFoundError:
+            return []
+        except Exception as exc:
+            self.logger.warning(f"Failed to parse warning.log: {exc}")
+            return []
+
+    def _parse_time_json(self, output_folder: orm.FolderData, output_suffix: str) -> dict:
+        """Parse time.json if requested and available."""
+        if not self.check_include_node("time_json"):
+            return {}
+
+        candidate_paths = ("time.json", f"OUT.{output_suffix}/time.json")
+        for path in candidate_paths:
+            try:
+                with output_folder.open(path, "r") as fhandle:
+                    return TimejsonParser(fhandle).parse()
+            except FileNotFoundError:
+                continue
+            except Exception as exc:
+                self.logger.warning(f"Failed to parse {path}: {exc}")
+                return {}
+        self.logger.warning("time.json was requested but not found in retrieved files.")
+        return {}
+
+    def _parse_pdos(self, output_folder: orm.FolderData, output_suffix: str) -> dict | None:
+        """Parse PDOS file if requested and available."""
+        path = f"OUT.{output_suffix}/PDOS"
+        try:
+            with output_folder.open(path, "r") as fhandle:
+                return PdosParser(fhandle).parse()
+        except FileNotFoundError:
+            self.logger.warning("PDOS was requested but not found in retrieved files.")
+            return None
+        except Exception as exc:
+            self.logger.warning(f"Failed to parse PDOS: {exc}")
+            return None
 
     @staticmethod
     def _merge_warnings(*warning_sets: list[dict]) -> list[dict]:

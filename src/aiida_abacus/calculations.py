@@ -181,6 +181,12 @@ class AbacusCalculation(CalcJob):
             help="Molecular dynamics trajectory data",
             required=False,
         )
+        spec.output(
+            "pdos",
+            valid_type=orm.Dict,
+            help="Projected density of states data",
+            required=False,
+        )
 
         spec.exit_code(
             300,

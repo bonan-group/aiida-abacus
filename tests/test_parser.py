@@ -23,12 +23,22 @@ def parser_with_retrieved(calc_with_retrieved, request):
     return wrapped
 
 
-def _write_retrieved_tree(base_path: pathlib.Path, calculation: str, log_content: str, warning_content: str = ""):
+def _write_retrieved_tree(
+    base_path: pathlib.Path,
+    calculation: str,
+    log_content: str,
+    warning_content: str = "",
+    extra_files: dict[str, str] | None = None,
+):
     out_folder = base_path / "OUT.aiida"
     out_folder.mkdir(parents=True, exist_ok=True)
     (out_folder / f"running_{calculation}.log").write_text(log_content)
     (out_folder / "warning.log").write_text(warning_content)
     (base_path / "abacus_output").write_text("")
+    for relative_path, content in (extra_files or {}).items():
+        destination = base_path / relative_path
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        destination.write_text(content)
 
 
 def test_parser_pw_si2(calc_with_retrieved, request):
@@ -97,6 +107,14 @@ def test_parser_pw_si2(calc_with_retrieved, request):
     for field in expected_fields:
         assert isinstance(misc[field], (int, float, bool, list))
 
+    assert misc["volume"] == pytest.approx(39.3137)
+    assert misc["energy_ks"] == pytest.approx(-215.5056984087)
+    assert misc["converged"] is True
+    assert misc["scf_steps"] == 5
+    assert misc["force"] is None
+    assert misc["stress"] is None
+    assert misc["pressures"] is None
+    assert misc["virial"] is None
     assert misc["warnings"] == [{"source": "scf", "message": "Threshold on eigenvalues was too large."}]
 
 
@@ -176,6 +194,16 @@ def test_parser_pw_si2_relax(calc_with_retrieved, request):
             for force in final_forces:
                 assert isinstance(force, list)
                 assert len(force) == 3
+
+    assert misc["relax_converged"] is True
+    assert misc["relax_steps"] == 7
+    assert len(misc["largest_gradient"]) == 7
+    assert len(misc["largest_gradient_stress"]) == 7
+    assert len(misc["force"]) == 6
+    assert len(misc["stress"]) == 9
+    assert len(misc["forces"]) == len(misc["all_forces"])
+    assert len(misc["stresses"]) == len(misc["all_stress"])
+    assert len(misc["virial"]) == 9
 
     # Check for structure output in relaxation calculations
     if "structure" in parser.outputs:
@@ -391,6 +419,64 @@ def test_parser_merges_running_log_warnings(calc_with_retrieved, tmp_path):
         {"source": "driver", "message": "Calculation will restart"},
         {"source": "running_log", "message": "Threshold on eigenvalues was too large."},
     ]
+
+
+def test_parser_includes_time_json_metrics(parser_with_retrieved):
+    parser, exit_code = parser_with_retrieved("pw_Si2", settings={"include_time_json": True})
+
+    assert exit_code is None
+    misc = parser.outputs["misc"].get_dict()
+
+    assert misc["total_time"] == pytest.approx(1.74071)
+    assert misc["stress_time"] is None
+    assert misc["force_time"] is None
+
+
+def test_parser_emits_pdos_node(calc_with_retrieved, tmp_path):
+    file_path = tmp_path / "pw_pdos"
+    _write_retrieved_tree(
+        file_path,
+        "scf",
+        "\n".join(
+            [
+                " Volume (A^3) = 10.0",
+                " E_KohnSham     -1.23       -16.0",
+                " EFERMI = 1.23 eV",
+                " NBANDS = 8",
+                " #SCF IS CONVERGED#",
+                " !FINAL_ETOT_IS  -2.0 eV",
+                " Total  Time  :  1.0 s",
+            ]
+        ),
+        extra_files={
+            "OUT.aiida/PDOS": "\n".join(
+                [
+                    "<pdos>",
+                    "  <nspin>2</nspin>",
+                    "  <energy_values>-1.0 0.0 1.0</energy_values>",
+                    '  <orbital index="1" atom_index="1" species="Si" l="1" m="0" z="0">',
+                    "    <data>",
+                    "      -1.0 0.1 0.2",
+                    "      0.0 0.3 0.4",
+                    "      1.0 0.5 0.6",
+                    "    </data>",
+                    "  </orbital>",
+                    "</pdos>",
+                ]
+            )
+        },
+    )
+
+    node = calc_with_retrieved(str(file_path), settings={"include_pdos": True})
+    parser = AbacusParser(node)
+    exit_code = parser.parse()
+
+    assert exit_code is None
+    assert "pdos" in parser.outputs
+    pdos = parser.outputs["pdos"].get_dict()
+    assert pdos["nspin"] == 2
+    assert pdos["orbitals"][0]["species"] == "Si"
+    assert pdos["orbitals"][0]["data"][1] == [-0.2, -0.4, -0.6]
 
 
 def test_parser_returns_geometry_not_converged(calc_with_retrieved, tmp_path):

@@ -344,6 +344,14 @@ class AbacusBaseWorkChain(ProtocolMixin, BaseRestartWorkChain):
         if options:
             metadata["options"] = recursive_merge(inputs["abacus"]["metadata"]["options"], options)
 
+        resources = metadata.setdefault("options", {}).setdefault("resources", {})
+        if (
+            "num_machines" in resources
+            and "num_mpiprocs_per_machine" not in resources
+            and "tot_num_mpiprocs" not in resources
+        ):
+            resources["num_mpiprocs_per_machine"] = 1
+
         # pylint: disable=no-member
         builder = cls.get_builder()
         builder.abacus["code"] = code

@@ -89,6 +89,22 @@ class SettingsOptions(OptionContainer):
         description="Flag for including the kpoints in the output",
         default=False,
     )
+    include_pdos: bool = Field(
+        description="Flag for including the projected density of states in the output",
+        default=False,
+    )
+    include_time_json: bool = Field(
+        description="Flag for including metrics parsed from time.json in the output",
+        default=False,
+    )
+    include_eigenvalues: bool = Field(
+        description="Flag for retrieving the explicit eigenvalue file for downstream analysis",
+        default=False,
+    )
+    include_mulliken: bool = Field(
+        description="Flag for retrieving Mulliken population output for downstream analysis",
+        default=False,
+    )
     excluded_retrieve_list: list = Field(
         description="List of files to be excluded from the retrieved files",
         default=[],
@@ -99,6 +115,10 @@ class SettingsOptions(OptionContainer):
     )
     retrieve_charge_density: bool = Field(
         description="Flag for including the charge density in the output",
+        default=False,
+    )
+    retrieve_potential: bool = Field(
+        description="Flag for retrieving electrostatic potential output for downstream workflows",
         default=False,
     )
 
@@ -176,6 +196,40 @@ class BandOptions(OptionContainer):
         description="Additional keyword arguments for the seekpath/ interface, available keys are:"
         "  ['with_time_reversal', 'reference_distance', 'recipe', 'threshold', 'symprec', 'angle_tolerance']",
         default={},
+    )
+
+
+class DosOptions(OptionContainer):
+    """Options for AbacusDosWorkChain"""
+
+    dos_kpoints_distance: float = Field(
+        description="K-point spacing in A^-1 used for the DOS NSCF calculation.",
+        default=0.20,
+    )
+    include_pdos: bool = Field(
+        description="Whether to request projected DOS output from the DOS NSCF calculation.",
+        default=True,
+    )
+
+
+class EosOptions(OptionContainer):
+    """Options for AbacusEosWorkChain"""
+
+    scale_start: float = Field(
+        description="Lowest isotropic lattice scaling factor to include in the EOS sweep.",
+        default=0.94,
+    )
+    scale_end: float = Field(
+        description="Highest isotropic lattice scaling factor to include in the EOS sweep.",
+        default=1.06,
+    )
+    scale_step: float = Field(
+        description="Increment between isotropic lattice scaling factors in the EOS sweep.",
+        default=0.02,
+    )
+    fit_equation: str = Field(
+        description="ASE equation-of-state model used to fit the collected volume-energy points.",
+        default="birchmurnaghan",
     )
 
 

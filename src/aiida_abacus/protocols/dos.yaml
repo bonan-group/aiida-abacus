@@ -1,0 +1,13 @@
+default_inputs:
+  dos_settings:
+    dos_kpoints_distance: 0.15
+    include_pdos: true
+
+default_protocol: balanced
+protocols:
+    balanced:
+        description: 'Protocol to perform a DOS calculation at moderate computational cost.'
+    stringent:
+        description: 'Protocol to perform a DOS calculation at high precision and higher computational cost.'
+    fast:
+        description: 'Protocol to perform a DOS calculation at low precision for testing.'

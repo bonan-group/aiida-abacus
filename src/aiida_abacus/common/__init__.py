@@ -1,6 +1,7 @@
 import collections
 import enum
 import pathlib
+from copy import deepcopy
 from typing import List, Union
 
 import yaml
@@ -9,6 +10,13 @@ from aiida.common import AttributeDict
 from aiida.engine.processes import PortNamespace
 
 DEFAULT_RETRIEVE_FILES = ("INPUT", "kpoints", "warning.log", "STRU_ION_D", "STRU_ION*_D")
+OPTIONAL_RETRIEVE_FILES = {
+    "include_pdos": ("OUT.{suffix}/PDOS",),
+    "include_time_json": ("time.json", "OUT.{suffix}/time.json"),
+    "include_eigenvalues": ("OUT.{suffix}/eig.txt",),
+    "include_mulliken": ("OUT.{suffix}/mulliken.txt",),
+    "retrieve_potential": ("OUT.{suffix}/ElecStaticPot.cube",),
+}
 
 
 def make_retrieve_list(
@@ -38,9 +46,20 @@ def make_retrieve_list(
             continue
         files.append(f"OUT.{folder_suffix}/{name}")
 
+    for option, option_files in OPTIONAL_RETRIEVE_FILES.items():
+        if not settings.get(option, False):
+            continue
+        for name in option_files:
+            resolved = name.format(suffix=folder_suffix)
+            if resolved in excluded:
+                continue
+            files.append(resolved)
+
     files.append(f"OUT.{folder_suffix}/running_{calc_type}.log")
     if add_density:
         files.append(f"OUT.{folder_suffix}/{folder_suffix}-CHARGE-DENSITY.restart")
+
+    files = list(dict.fromkeys(files))
 
     if full_specification:
         output = []
@@ -211,7 +230,9 @@ def recursive_merge(left: dict, right: dict) -> dict:
     :param right: second dictionary
     :return: the recursively merged dictionary
     """
-    # Note that a deepcopy is not necessary, since this function is called recusively.
+    # Clone the existing content so the merged result never aliases nested containers
+    # or AiiDA nodes from the original left-hand mapping.
+    left = _safe_clone_merge_value(left)
     right = right.copy()
 
     for key, value in left.items():
@@ -223,6 +244,20 @@ def recursive_merge(left: dict, right: dict) -> dict:
     merged.update(right)
 
     return merged
+
+
+def _safe_clone_merge_value(value):
+    """Clone merge inputs while preserving AiiDA node semantics."""
+    if isinstance(value, orm.Node):
+        clone = getattr(value, "clone", None)
+        return clone() if callable(clone) else value
+    if isinstance(value, dict):
+        return {key: _safe_clone_merge_value(sub_value) for key, sub_value in value.items()}
+    if isinstance(value, list):
+        return [_safe_clone_merge_value(item) for item in value]
+    if isinstance(value, tuple):
+        return tuple(_safe_clone_merge_value(item) for item in value)
+    return deepcopy(value)
 
 
 class ElectronicType(enum.Enum):

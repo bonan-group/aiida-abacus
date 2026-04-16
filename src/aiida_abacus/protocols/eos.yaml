@@ -1,0 +1,23 @@
+default_inputs:
+  eos_settings:
+    scale_start: 0.94
+    scale_end: 1.06
+    scale_step: 0.02
+    fit_equation: birchmurnaghan
+
+default_protocol: balanced
+protocols:
+    balanced:
+        description: 'Protocol to perform an EOS calculation at moderate computational cost.'
+    stringent:
+        description: 'Protocol to perform an EOS calculation at high precision and higher computational cost.'
+        eos_settings:
+            scale_start: 0.92
+            scale_end: 1.08
+            scale_step: 0.02
+    fast:
+        description: 'Protocol to perform an EOS calculation at lower precision for testing.'
+        eos_settings:
+            scale_start: 0.96
+            scale_end: 1.04
+            scale_step: 0.02

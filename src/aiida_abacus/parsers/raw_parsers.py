@@ -1,4 +1,6 @@
+import json
 import re
+import xml.etree.ElementTree as ET
 from logging import getLogger
 from pathlib import Path
 from typing import List
@@ -78,6 +80,8 @@ class AbacusRawParser(BaseRawParser):
         self.parse_blocks()
         # Parse the lines one-by-one for general information of the calculation
         self.results["energies"] = []  # Container for the per-ionic-step energies in eV
+        energy_ks = []
+        scf_iterations = set()
         for line in self.lines:
             if "TOTAL-pressure" in line:
                 self.results["total_pressure"] = float(line.strip().split()[-2])
@@ -90,12 +94,78 @@ class AbacusRawParser(BaseRawParser):
                 self.results["number_of_bands"] = int(line.strip().split()[-1])
             elif "EFERMI" in line:
                 self.results["fermi_level"] = float(line.strip().split()[-2])
+            elif "E_KohnSham" in line:
+                energy_ks.append(float(line.strip().split()[-1]))
+            elif "Volume (A^3) =" in line:
+                self.results["volume"] = float(line.strip().split()[-1])
+            elif "Largest gradient in force is" in line:
+                self.results.setdefault("largest_gradient", []).append(float(line.strip().split()[-2]))
+            elif "Largest gradient is" in line:
+                self.results.setdefault("largest_gradient", []).append(float(line.strip().split()[-1]))
+            elif "Largest gradient in stress is" in line:
+                self.results.setdefault("largest_gradient_stress", []).append(float(line.strip().split()[-2]))
+            elif "STEP OF RELAXATION :" in line or " STEP OF ION RELAXATION : " in line:
+                self.results["relax_steps"] = int(line.strip().split()[-1])
+            elif "ALGORITHM --------------- ION=" in line:
+                match = re.search(r"ION=\s*(\d+)\s+ELEC=\s*(\d+)", line)
+                if match:
+                    self.results["relax_steps"] = int(match.group(1))
+                    scf_iterations.add((int(match.group(1)), int(match.group(2))))
 
+        notifications = self.parse_notifications()
+        final_scf_state = self._last_notification_name(notifications, {"scf_converged", "scf_not_converged"})
+        final_relax_state = self._last_notification_name(
+            notifications,
+            {"ionic_converged", "ionic_not_converged", "geometry_not_converged"},
+        )
+        self.results["converged"] = None if final_scf_state is None else final_scf_state == "scf_converged"
+        self.results["relax_converged"] = None if final_relax_state is None else final_relax_state == "ionic_converged"
+        self.results["energy_ks"] = energy_ks[-1] if energy_ks else None
+        self.results["scf_steps"] = max((electron for _, electron in scf_iterations), default=None)
+        self._normalize_force_stress()
         # Check calculation completion status
         self.results["run_status"] = self.compose_run_status()
 
         self.is_parsed = True
         return self.results
+
+    def _normalize_force_stress(self) -> None:
+        """Add flattened force, stress, pressure, and virial fields."""
+        all_forces = self.results.get("all_forces", [])
+        all_stress = self.results.get("all_stress", [])
+        volume = self.results.get("volume")
+
+        self.results["forces"] = [np.array(step).reshape(-1).tolist() for step in all_forces] or None
+        self.results["force"] = self.results["forces"][-1] if self.results["forces"] else None
+        self.results["stresses"] = [np.array(step).reshape(-1).tolist() for step in all_stress] or None
+        self.results["stress"] = self.results["stresses"][-1] if self.results["stresses"] else None
+
+        if self.results["stresses"]:
+            pressures = []
+            for stress in self.results["stresses"]:
+                pressures.append((stress[0] + stress[4] + stress[8]) / 3.0)
+            self.results["pressures"] = pressures
+            self.results["pressure"] = pressures[-1]
+        else:
+            self.results["pressures"] = None
+            self.results["pressure"] = self.results.get("total_pressure")
+
+        if volume is not None and self.results["stresses"]:
+            virials = [(np.array(stress) * volume * KBAR_TO_EV_PER_ANGSTROM3).tolist() for stress in self.results["stresses"]]
+            self.results["virials"] = virials
+            self.results["virial"] = virials[-1]
+        else:
+            self.results["virials"] = None
+            self.results["virial"] = None
+
+    @staticmethod
+    def _last_notification_name(notifications: list[dict], names: set[str]) -> str | None:
+        """Return the last matching notification name from an ordered notification list."""
+        for notification in reversed(notifications):
+            name = notification.get("name")
+            if name in names:
+                return name
+        return None
 
     def parse_kpoints(self):
         """
@@ -362,6 +432,68 @@ class BlockParser:
                 new_block.append([constructor(token) for constructor, token in zip(self.types, tokens)])
             converted.append([block_name, new_block])
         return converted
+
+
+class TimejsonParser(BaseRawParser):
+    """Parse ABACUS time.json and expose high-level timing metrics."""
+
+    def __init__(self, fhandle):
+        super().__init__(fhandle)
+        self.data = json.loads(self.content)
+
+    def parse(self) -> dict:
+        total_time = self.data.get("total")
+        stress_time = self._get_time("Stress_PW", "cal_stress") or self._get_time("Force_Stress_LCAO", "getForceStress")
+        force_time = self._get_time("Forces", "cal_force_nl")
+        return {
+            "total_time": total_time,
+            "stress_time": stress_time,
+            "force_time": force_time,
+        }
+
+    def _get_time(self, class_name: str, func_name: str) -> float | None:
+        for entry in self.data.get("sub", []):
+            if entry.get("class_name") != class_name:
+                continue
+            for sub_entry in entry.get("sub", []):
+                if sub_entry.get("name") == func_name:
+                    return sub_entry.get("cpu_second")
+        return None
+
+
+class PdosParser(BaseRawParser):
+    """Parse ABACUS PDOS XML output."""
+
+    def parse(self) -> dict:
+        root = ET.fromstring(self.content)
+        nspin = int(root.findtext("nspin"))
+        energy = [float(value) for value in root.findtext("energy_values", "").split()]
+        orbitals = []
+        for orbital in root.findall("orbital"):
+            data = [[] for _ in range(nspin)]
+            for line in orbital.findtext("data", "").splitlines():
+                tokens = line.split()
+                if not tokens:
+                    continue
+                for spin in range(min(nspin, len(tokens) - 1)):
+                    value = float(tokens[spin + 1])
+                    data[spin].append(-value if spin == 1 else value)
+            orbitals.append(
+                {
+                    "index": int(orbital.get("index")),
+                    "atom_index": int(orbital.get("atom_index")),
+                    "species": orbital.get("species"),
+                    "l": int(orbital.get("l")),
+                    "m": int(orbital.get("m")),
+                    "z": int(orbital.get("z")),
+                    "data": data,
+                }
+            )
+
+        return {"nspin": nspin, "energy": energy, "orbitals": orbitals}
+
+
+KBAR_TO_EV_PER_ANGSTROM3 = 6.241509074e-4
 
 
 class BandsParser(BaseRawParser):

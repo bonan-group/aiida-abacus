@@ -12,7 +12,9 @@ from aiida_abacus.parsers.raw_parsers import (
     BandsParser,
     InternalParametersParser,
     KpointsParser,
+    PdosParser,
     StruParser,
+    TimejsonParser,
     WarningLogParser,
 )
 
@@ -194,3 +196,72 @@ def test_parse_runtime_warnings():
         {"source": "running_log", "message": "Threshold on eigenvalues was too large."},
         {"source": "running_log", "message": "Falling back to a slower path"},
     ]
+
+
+def test_parse_additional_metrics_from_existing_scf_fixture(data_folder):
+    parser = AbacusRawParser(data_folder / "pw_Si2/OUT.aiida/running_scf.log")
+    results = parser.parse()
+
+    assert results["volume"] == pytest.approx(39.3137)
+    assert results["energy_ks"] == pytest.approx(-215.5056984087)
+    assert results["converged"] is True
+    assert results["scf_steps"] == 5
+    assert results["pressure"] is None
+    assert results["forces"] is None
+    assert results["stresses"] is None
+
+
+def test_parse_additional_metrics_from_existing_relax_fixture(data_folder):
+    parser = AbacusRawParser(data_folder / "pw_Si2-relax/OUT.aiida/running_cell-relax.log")
+    results = parser.parse()
+
+    assert results["relax_converged"] is True
+    assert results["relax_steps"] == 7
+    assert len(results["largest_gradient"]) == 7
+    assert len(results["largest_gradient_stress"]) == 7
+    assert results["forces"] is not None
+    assert results["stresses"] is not None
+    assert len(results["force"]) == 6
+    assert len(results["stress"]) == 9
+    assert len(results["pressures"]) == len(results["stresses"])
+    assert results["virial"] is not None
+    assert len(results["virial"]) == 9
+
+
+def test_timejson_parser(data_folder):
+    parser = TimejsonParser(data_folder / "pw_Si2/time.json")
+    results = parser.parse()
+
+    assert results["total_time"] == pytest.approx(1.74071)
+    assert results["stress_time"] is None
+    assert results["force_time"] is None
+
+
+def test_pdos_parser():
+    parser = PdosParser(
+        StringIO(
+            "\n".join(
+                [
+                    "<pdos>",
+                    "  <nspin>2</nspin>",
+                    "  <energy_values>-1.0 0.0 1.0</energy_values>",
+                    '  <orbital index="1" atom_index="1" species="Si" l="1" m="0" z="0">',
+                    "    <data>",
+                    "      -1.0 0.1 0.2",
+                    "      0.0 0.3 0.4",
+                    "      1.0 0.5 0.6",
+                    "    </data>",
+                    "  </orbital>",
+                    "</pdos>",
+                ]
+            )
+        )
+    )
+
+    results = parser.parse()
+
+    assert results["nspin"] == 2
+    assert results["energy"] == [-1.0, 0.0, 1.0]
+    assert results["orbitals"][0]["species"] == "Si"
+    assert results["orbitals"][0]["data"][0] == [0.1, 0.3, 0.5]
+    assert results["orbitals"][0]["data"][1] == [-0.2, -0.4, -0.6]
