@@ -1,0 +1,46 @@
+ AUTO_SET NBANDS to 14
+ AUTO_SET NBANDS to 14
+                            startmag_type = 2
+                       charge from rho_at = 4
+                         charge should be = 4
+
+ SETUP ATOMIC RHO FOR SPIN 1
+                 Electron number from rho = 8
+           total electron number from rho = 8
+                                should be = 8
+                 charge before normalized = 8.0000000000001
+                  charge after normalized = 7.99999999999994
+                 charge before normalized = 8.00000044670986
+                  charge after normalized = 7.99999999999994
+                 charge before normalized = 8.0000000000002
+                  charge after normalized = 7.99999999999999
+                 charge before normalized = 8.00000063590474
+                  charge after normalized = 7.99999999999998
+                 charge before normalized = 8.00000000000021
+                  charge after normalized = 8.00000000000002
+                 charge before normalized = 8.00000068142414
+                  charge after normalized = 8.00000000000002
+                 charge before normalized = 7.9999999999996
+                  charge after normalized = 8.00000000000003
+                 charge before normalized = 8.00000068173687
+                  charge after normalized = 7.99999999999982
+                 charge before normalized = 8.00000000000002
+                  charge after normalized = 8.00000000000001
+                 charge before normalized = 8.00000068202464
+                  charge after normalized = 7.99999999999997
+                 charge before normalized = 8.00000000000027
+                  charge after normalized = 8.00000000000002
+                 charge before normalized = 8.00000068195191
+                  charge after normalized = 7.99999999999999
+                 charge before normalized = 7.99999999999979
+                  charge after normalized = 8.00000000000001
+                 charge before normalized = 8.00000068192993
+                  charge after normalized = 8.00000000000001
+                            startmag_type = 2
+                       charge from rho_at = 3.99999805785498
+                         charge should be = 4
+
+ SETUP ATOMIC RHO FOR SPIN 1
+                 Electron number from rho = 7.99999999999964
+           total electron number from rho = 7.99999999999964
+                                should be = 8

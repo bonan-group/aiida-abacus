@@ -20,3 +20,7 @@ pip-wheel-metadata/
 .venv
 uv.lock
 .python-version
+ABACUS_INTEGRATION_REPORT.md
+
+# ABACUS real test generated outputs (keep reference_outputs/)
+tests/abacus_real_tests/outputs/

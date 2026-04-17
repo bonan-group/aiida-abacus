@@ -1,0 +1,12 @@
+INPUT_PARAMETERS
+#Parameters  (General)
+pseudo_dir      ../../pp_orb
+suffix          AIIDA
+symmetry        1
+#Parameters  (Accuracy)
+basis_type      pw
+ecutwfc         60
+scf_thr         1e-7
+scf_nmax        100
+device          cpu
+ks_solver       dav_subspace

@@ -1,0 +1,23 @@
+INPUT_PARAMETERS
+calculation         cell-relax
+relax_nmax          50
+force_thr_ev        0.01
+stress_thr          1
+relax_method        bfgs
+out_stru            1
+out_level           ie
+pseudo_rcut         10.0
+pseudo_mesh         1
+ecutwfc             60
+basis_type          pw
+ks_solver           cg
+smearing_method     gaussian
+smearing_sigma      0.01
+mixing_type         broyden
+mixing_beta         0.7
+scf_thr             1e-8
+cal_force           1
+cal_stress          1
+chg_extrap          second-order
+pseudo_dir          ../../pp_orb
+suffix              AIIDA

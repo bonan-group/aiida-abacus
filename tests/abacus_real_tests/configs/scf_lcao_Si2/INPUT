@@ -1,0 +1,10 @@
+INPUT_PARAMETERS
+#Parameters  (General)
+pseudo_dir      ../../pp_orb
+orbital_dir     ../../pp_orb
+suffix          AIIDA
+#Parameters (Accuracy)
+ecutwfc         60
+scf_nmax        100
+scf_thr         1e-6
+basis_type      lcao

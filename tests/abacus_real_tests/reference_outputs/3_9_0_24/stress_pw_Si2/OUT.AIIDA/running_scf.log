@@ -1,0 +1,521 @@
+                                                                                     
+                              ABACUS v3.9.0.24
+
+               Atomic-orbital Based Ab-initio Computation at UStc                    
+
+                     Website: http://abacus.ustc.edu.cn/                             
+               Documentation: https://abacus.deepmodeling.com/                       
+                  Repository: https://github.com/abacusmodeling/abacus-develop       
+                              https://github.com/deepmodeling/abacus-develop         
+                      Commit: 299150a6b (Tue Mar 10 09:46:03 2026 +0800)
+
+    Start Time is Fri Apr 17 21:09:24 2026
+                                                                                     
+ ------------------------------------------------------------------------------------
+
+ READING GENERAL INFORMATION
+                           global_out_dir = OUT.AIIDA/
+                           global_in_card = INPUT
+                               pseudo_dir = /home/bonan/aiida_env/aiida-2.0/devzone/aiida-abacus-more-workflows/tests/abacus_real_tests/pp_orb/
+                              orbital_dir = 
+                                    DRANK = 1
+                                    DSIZE = 1
+                                   DCOLOR = 1
+                                    GRANK = 1
+                                    GSIZE = 1
+
+
+ >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+ |                                                                    |
+ |                        #Setup Unitcell#                            |
+ | From the input file and the structure file we know the number of   |
+ | different elments in this unitcell, then we list the detail        |
+ | information for each element, especially the zeta and polar atomic |
+ | orbital number for each element. The total atom number is counted. |
+ | We calculate the nearest atom distance for each atom and show the  |
+ | Cartesian and Direct coordinates for each atom. We list the file   |
+ | address for atomic orbitals. The volume and the lattice vectors    |
+ | in real and reciprocal space is also shown.                        |
+ |                                                                    |
+ <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+ READING UNITCELL INFORMATION
+                       Number of elements = 1
+                  Lattice constant (Bohr) = 10.2
+              Lattice constant (Angstrom) = 5.39761
+
+ READING ATOM TYPE 1
+                               Atom label = Si
+                      L=0, number of zeta = 1
+                      L=1, number of zeta = 1
+                      L=2, number of zeta = 1
+            Number of atoms for this type = 2
+
+                        TOTAL ATOM NUMBER = 2
+
+ CARTESIAN COORDINATES ( UNIT =     10.20000000 Bohr )
+ atom                  x                  y                  z     mag
+   Si     0.000000000000     0.000000000000     0.000000000000  0.0000
+   Si     0.250000000000     0.250000000000     0.250000000000  0.0000
+
+ ATOMIC VELOCITIES
+ atom                 vx                 vy                 vz
+   Si                  0                  0                  0
+   Si                  0                  0                  0
+
+                     Cell volume (Bohr^3) = 265.302
+                        Cell volume (A^3) = 39.3137
+
+ Lattice vectors: (Cartesian coordinate: in unit of a_0)
+                   +0                +0.5                +0.5
+                 +0.5                  +0                +0.5
+                 +0.5                +0.5                  +0
+ Reciprocal vectors: (Cartesian coordinate: in unit of 2 pi/a_0)
+                   -1                  +1                  +1
+                   +1                  -1                  +1
+                   +1                  +1                  -1
+
+ #ENERGY SOLVER# ksdft_pw
+ RUNNING WITH DEVICE  : CPU / Intel(R) Core(TM) i9-14900KF (x1)
+
+
+ >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+ |                                                                    |
+ |                 #Read Pseudopotentials Files#                      |
+ | ABACUS supports norm-conserving (NC) pseudopotentials for both     |
+ | plane wave basis and numerical atomic orbital basis sets.          |
+ | In addition, ABACUS supports ultrasoft pseudopotentials (USPP)     |
+ | for plane wave basis set.                                          |
+ |                                                                    |
+ <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+                PAO radial cut off (Bohr) = 15
+                     Pseudopotential file = Si.pz-vbc.UPF
+                     Pseudopotential type = NC
+          Exchange-correlation functional = PZ
+                 Nonlocal core correction = 0
+                        Valence electrons = 4
+                                     Lmax = 1
+                           Number of zeta = 2
+                     Number of projectors = 2
+                           L of projector = 0
+                           L of projector = 1
+         Number of pseudo atomic orbitals = 8
+            Electron number of element Si = 4
+      Total electron number of element Si = 8
+          Autoset the number of electrons = 8
+               Occupied electronic states = 4
+     Number of electronic states (NBANDS) = 8
+
+
+ >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+ |                                                                    |
+ |           #Setup Plane Waves of Charge/Potential#                  |
+ | Use the kinetic energy cutoff and the lattice vectors to generate  |
+ | the dimensions of FFT grid, which is used to represent the charge  |
+ | density or potential. If USPP is used, a double grid technique     |
+ | is applied.                                                        |
+ |                                                                    |
+ <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+ SETUP PLANE WAVES FOR CHARGE/POTENTIAL
+  Energy cutoff for charge/potential (Ry) = 240
+            FFT grid for charge/potential = [ 36, 36, 36 ]
+           Number of FFT grids this proc. = 46656
+                Division for big FFT grid = [ 1, 1, 1 ]
+      FFT (big) grid for charge/potential = [ 36, 36, 36 ]
+     Number of FFT (big) grids this proc. = 46656
+                    Number of plane waves = 16625
+        Number of sticks on FFT x-y plane = 859
+
+ PARALLEL PW FOR CHARGE/POTENTIAL
+     PROC   COLUMNS(POT)             PW
+        1            859          16625
+ --------------- SUM -------------------
+        1            859          16625
+
+                            Number of |g| = 213
+                                  Max |g| = 632
+                                  Min |g| = 0
+
+
+ >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+ |                                                                    |
+ |                      #Symmetry Analysis#                           |
+ | We calculate the norm of 3 vectors and the angles between them,    |
+ | the type of Bravais lattice is given. We can judge if the unticell |
+ | is a primitive cell. Finally we give the point group operation for |
+ | this unitcell. We use the point group operations to perform        |
+ | symmetry analysis on given k-point mesh and the charge density.    |
+ |                                                                    |
+ <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+ LATTICE VECTORS: (CARTESIAN COORDINATE: IN UNIT OF A0)
+                   +0                +0.5                +0.5
+                 +0.5                  +0                +0.5
+                 +0.5                +0.5                  +0
+                     Right-handed lattice = 1
+                                   NORM_A = 0.707107
+                                   NORM_B = 0.707107
+                                   NORM_C = 0.707107
+                           ALPHA (DEGREE) = 60
+                           BETA  (DEGREE) = 60
+                           GAMMA (DEGREE) = 60
+
+ The lattice vectors have been changed (STRU_SIMPLE.cif)
+
+ For optimal symmetric configuration:
+                             BRAVAIS TYPE = 3
+                     BRAVAIS LATTICE NAME = 03. Cubic F (face-centered)
+                                    ibrav = 3
+                                    IBRAV = 3
+                                  BRAVAIS = FACE CENTERED CUBIC
+                       LATTICE CONSTANT A = 1
+
+ Original cell was already a primitive cell.
+              Number of rotation matrices = 48
+              PURE POINT GROUP OPERATIONS = 24
+                   SPACE GROUP OPERATIONS = 48
+                                       C2 = 3
+                                       C3 = 8
+                                       C4 = 0
+                                       C6 = 0
+                                       S1 = 6
+                                       S3 = 0
+                                       S4 = 6
+                                       S6 = 0
+                              POINT GROUP = T_d
+               POINT GROUP IN SPACE GROUP = O_h
+ DONE : SYMMETRY Time : 0.0352924 (SEC)
+
+ DONE : SETUP UNITCELL Time : 0.0353039 (SEC)
+
+
+ >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+ |                                                                    |
+ |                       #Setup K-points#                             |
+ | We setup the k-points according to input parameters.               |
+ | The reduced k-points are set according to symmetry operations.     |
+ | We treat the spin as another set of k-points.                      |
+ |                                                                    |
+ <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+
+ SETUP K-POINTS
+                                    nspin = 1
+                   Input type of k points = Monkhorst-Pack(Gamma)
+                                   nkstot = 64
+                     Right-handed lattice = 1
+
+ For reciprocal-space lattice
+                     Bravais lattice type = 2
+                     Bravais lattice name = 02. Cubic I (body-centered)
+                     Right-handed lattice = 1
+
+ For k-vectors
+                     Bravais lattice type = 2
+                     Bravais lattice name = 02. Cubic I (body-centered)
+                     Right-handed lattice = 1
+              Number of rotation matrices = 48
+           Number of irreducible k-points = 8
+
+ K-POINTS REDUCTION ACCORDING TO SYMMETRY
+     IBZ    DIRECT_X    DIRECT_Y    DIRECT_Z  WEIGHT  ibz2bz
+       1  0.00000000  0.00000000  0.00000000  0.0156       0
+       2  0.25000000  0.25000000  0.25000000  0.1250       1
+       3  0.50000000  0.50000000  0.50000000  0.0625       2
+       4  0.25000000  0.25000000  0.00000000  0.0938       5
+       5  0.50000000  0.50000000  0.25000000  0.3750       6
+       6  0.50000000  0.25000000  0.25000000  0.1875       7
+       7  0.50000000  0.50000000  0.00000000  0.0469      10
+       8  0.50000000  0.25000000 -0.25000000  0.0938      27
+
+                               nkstot now = 8
+ K-POINTS DIRECT COORDINATES
+ KPOINTS    DIRECT_X    DIRECT_Y    DIRECT_Z  WEIGHT
+       1  0.00000000  0.00000000  0.00000000  0.0156
+       2  0.25000000  0.25000000  0.25000000  0.1250
+       3  0.50000000  0.50000000  0.50000000  0.0625
+       4  0.25000000  0.25000000  0.00000000  0.0938
+       5  0.50000000  0.50000000  0.25000000  0.3750
+       6  0.50000000  0.25000000  0.25000000  0.1875
+       7  0.50000000  0.50000000  0.00000000  0.0469
+       8  0.50000000  0.25000000 -0.25000000  0.0938
+
+
+       Number of k-points in this process = 8
+       Minimum distributed k-point number = 8
+
+ K-POINTS CARTESIAN COORDINATES
+ KPOINTS CARTESIAN_X CARTESIAN_Y CARTESIAN_Z  WEIGHT
+       1  0.00000000  0.00000000  0.00000000  0.0312
+       2  0.25000000  0.25000000  0.25000000  0.2500
+       3  0.50000000  0.50000000  0.50000000  0.1250
+       4  0.00000000  0.00000000  0.50000000  0.1875
+       5  0.25000000  0.25000000  0.75000000  0.7500
+       6  0.00000000  0.50000000  0.50000000  0.3750
+       7  0.00000000  0.00000000  1.00000000  0.0938
+       8 -0.50000000  0.00000000  1.00000000  0.1875
+
+
+ K-POINTS DIRECT COORDINATES
+ KPOINTS    DIRECT_X    DIRECT_Y    DIRECT_Z  WEIGHT
+       1  0.00000000  0.00000000  0.00000000  0.0312
+       2  0.25000000  0.25000000  0.25000000  0.2500
+       3  0.50000000  0.50000000  0.50000000  0.1250
+       4  0.25000000  0.25000000  0.00000000  0.1875
+       5  0.50000000  0.50000000  0.25000000  0.7500
+       6  0.50000000  0.25000000  0.25000000  0.3750
+       7  0.50000000  0.50000000  0.00000000  0.0938
+       8  0.50000000  0.25000000 -0.25000000  0.1875
+
+ DONE : INIT K-POINTS Time : 0.100365 (SEC)
+
+ XC:	lda_x	lda_c_pz	
+
+ >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+ |                                                                    |
+ | Setup charge mixing parameters                                     |
+ |                                                                    |
+ <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+                              mixing_type = broyden
+                              mixing_beta = 0.8
+                               mixing_gg0 = 1
+                           mixing_gg0_min = 0.1
+                              mixing_ndim = 8
+
+
+ >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+ |                                                                    |
+ |              #Setup Plane Waves of Wave Functions#                 |
+ | Use the kinetic energy cutoff and the lattice vectors to generate  |
+ | the dimensions of FFT grid, which is used to represent the wave    |
+ | functions of electrons.                                            |
+ |                                                                    |
+ <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+ SETUP PLANE WAVES FOR WAVE FUNCTIONS
+     Energy cutoff for wavefunc (unit:Ry) = 60
+              FFT grid for wave functions = [ 36, 36, 36 ]
+              Number of total plane waves = 2733
+        Number of sticks on FFT x-y plane = 253
+
+ PARALLEL PW FOR WAVE FUNCTIONS
+     PROC   COLUMNS(POT)             PW
+        1            253           2733
+ --------------- sum -------------------
+        1            253           2733
+ DONE : INIT PLANEWAVE Time : 0.104322 (SEC)
+
+                                 init_chg = atomic
+ DONE : LOCAL POTENTIAL Time : 0.107939 (SEC)
+
+
+ SETUP NONLOCAL PSEUDOPOTENTIALS IN PLANE WAVE BASIS
+ Si non-local projectors:
+ projector 1 L=0
+ projector 2 L=1
+      TOTAL NUMBER OF NONLOCAL PROJECTORS = 8
+
+ Init Non-Local PseudoPotential table : 
+ Init Non-Local-Pseudopotential done.
+ DONE : NON-LOCAL POTENTIAL Time : 0.114727 (SEC)
+
+                                     npwx = 2120
+
+ Using ATOMIC starting wave functions for all 8 atomic orbitals (covers 8 bands)
+
+ Make real space PAO into reciprocal space.
+       max mesh points in Pseudopotential = 375
+     dq(describe PAO in reciprocal space) = 0.01
+                                    max q = 934
+
+ number of pseudo atomic orbitals for Si is 2
+ DONE : INIT BASIS Time : 0.122183 (SEC)
+
+ ================================================================
+ SELF-CONSISTENT
+ ================================================================
+ DONE : INIT SCF Time : 0.18324 (SEC)
+
+
+ ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ --> #ION MOVE#         1  #ELEC ITER#         1
+ ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ Average iterative diagonalization steps for k-points is 3
+ current threshold of diagonalizaiton is 0.01
+ Notice: Threshold on eigenvalues was too large.
+ hsover_error=0.08 > DRHO=0.069275
+ Origin diag ethr = 0.01
+ New diag ethr = 0.000865937
+ Average iterative diagonalization steps for k-points is 2.125
+ current threshold of diagonalizaiton is 0.000865937
+ Electron density deviation 0.0685472
+                          Diago Threshold = 0.000865937
+ ----------------------------------------------------------
+      Energy           Rydberg                 eV          
+ ----------------------------------------------------------
+  E_KohnSham     -15.8360025598       -215.4598683558      
+  E_Harris       -15.6113739602       -212.4036394670      
+  E_Fermi        0.4525356801         6.1570637976         
+  E_gap(k)       0.0778052780         1.0585951156         
+ ----------------------------------------------------------
+
+
+ ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ --> #ION MOVE#         1  #ELEC ITER#         2
+ ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ Average iterative diagonalization steps for k-points is 2
+ current threshold of diagonalizaiton is 0.000856841
+ Electron density deviation 0.00196326
+                          Diago Threshold = 0.000856841
+ ----------------------------------------------------------
+      Energy           Rydberg                 eV          
+ ----------------------------------------------------------
+  E_KohnSham     -15.8391228991       -215.5023227506      
+  E_Harris       -15.8052637757       -215.0416457419      
+  E_Fermi        0.4767963694         6.4871474095         
+  E_gap(k)       0.0478099127         0.6504872336         
+ ----------------------------------------------------------
+
+
+ ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ --> #ION MOVE#         1  #ELEC ITER#         3
+ ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ Average iterative diagonalization steps for k-points is 2.5
+ current threshold of diagonalizaiton is 2.45408e-05
+ Electron density deviation 2.75784e-05
+                          Diago Threshold = 2.45408e-05
+ ----------------------------------------------------------
+      Energy           Rydberg                 eV          
+ ----------------------------------------------------------
+  E_KohnSham     -15.8393559901       -215.5054941163      
+  E_Harris       -15.8418178006       -215.5389887662      
+  E_Fermi        0.4813831019         6.5495531073         
+  E_gap(k)       0.0436406332         0.5937612754         
+ ----------------------------------------------------------
+
+
+ ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ --> #ION MOVE#         1  #ELEC ITER#         4
+ ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ Average iterative diagonalization steps for k-points is 3
+ current threshold of diagonalizaiton is 3.4473e-07
+ Electron density deviation 2.2741e-06
+                          Diago Threshold = 3.4473e-07
+ ----------------------------------------------------------
+      Energy           Rydberg                 eV          
+ ----------------------------------------------------------
+  E_KohnSham     -15.8393705135       -215.5056917166      
+  E_Harris       -15.8376270116       -215.4819701566      
+  E_Fermi        0.4812837056         6.5482007510         
+  E_gap(k)       0.0443708621         0.6036965502         
+ ----------------------------------------------------------
+
+
+ ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ --> #ION MOVE#         1  #ELEC ITER#         5
+ ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ Average iterative diagonalization steps for k-points is 2.5
+ current threshold of diagonalizaiton is 2.84263e-08
+ Electron density deviation 2.02219e-07
+                          Diago Threshold = 2.84263e-08
+ ----------------------------------------------------------
+      Energy           Rydberg                 eV          
+ ----------------------------------------------------------
+  E_KohnSham     -15.8393709745       -215.5056979889      
+  E_Harris       -15.8398322306       -215.5119737004      
+  E_Fermi        0.4815014095         6.5511627640         
+  E_gap(k)       0.0440844143         0.5997992273         
+ ----------------------------------------------------------
+
+
+ ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ --> #ION MOVE#         1  #ELEC ITER#         6
+ ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ Average iterative diagonalization steps for k-points is 2.125
+ current threshold of diagonalizaiton is 2.52773e-09
+ Electron density deviation 2.0339e-09
+                          Diago Threshold = 2.52773e-09
+ ----------------------------------------------------------
+      Energy           Rydberg                 eV          
+ ----------------------------------------------------------
+  E_KohnSham     -15.8393710078       -215.5056984420      
+  E_KS(sigma->0) -15.8393072837       -215.5048314314      
+  E_Harris       -15.8393229640       -215.5050447720      
+  E_band         0.6945464762         9.4497896026         
+  E_one_elec     4.7855022209         65.1100979959        
+  E_Hartree      1.1011947551         14.9825232775        
+  E_xc           -4.8261819623        -65.6635742714       
+  E_Ewald        -16.8997585734       -229.9330114227      
+  E_entropy(-TS) -0.0001274482        -0.0017340212        
+  E_descf        0.0000000000         0.0000000000         
+  E_localpp      -5.0067821879        -68.1207664007       
+  E_exx          0.0000000000         0.0000000000         
+  E_Fermi        0.4814629384         6.5506393381         
+  E_gap(k)       0.0441568676         0.6007850048         
+ ----------------------------------------------------------
+
+ #SCF IS CONVERGED#
+ #TOTAL ENERGY# -215.50569844 eV
+ Write eigenvalues and occupations to file: OUT.AIIDA/eig_occ.txt
+
+ #TOTAL-STRESS (kbar)#
+ ----------------------------------------------------------------
+              Stress_x             Stress_y             Stress_z 
+ ----------------------------------------------------------------
+          7.9951583266         0.0000000000         0.0000000000 
+          0.0000000000         7.9951583266         0.0000000000 
+          0.0000000000         0.0000000000         7.9951583266 
+ ----------------------------------------------------------------
+ #TOTAL-PRESSURE# (EXCLUDE KINETIC PART OF IONS): 7.995158 kbar
+
+ --------------------------------------------
+ !FINAL_ETOT_IS -215.5056984419938431 eV
+ --------------------------------------------
+
+
+
+TIME STATISTICS
+-----------------------------------------------------------------
+   CLASS_NAME          NAME        TIME/s  CALLS   AVG/s  PER/%  
+-----------------------------------------------------------------
+                 total             1.70   17       0.10   100.00 
+ Driver          atomic_world      1.70   1        1.70   100.00 
+ Symmetry        analy_sys         0.02   1        0.02   1.30   
+ PW_Basis_Sup    recip2real        0.02   23       0.00   1.08   
+ Relax_Driver    relax_driver      1.58   1        1.58   92.79  
+ ESolver_KS      runner            1.52   1        1.52   89.34  
+ ESolver_KS_PW   before_scf        0.06   1        0.06   3.59   
+ Potential       cal_veff          0.03   7        0.00   1.74   
+ PW_Basis_Sup    real2recip        0.02   32       0.00   1.13   
+ Symmetry_rho    begin             0.03   8        0.00   1.81   
+ PSIPrepare      initialize_psi    0.05   1        0.05   3.01   
+ Nonlocal        getvnl            0.03   64       0.00   1.77   
+ pp_cell_vnl     getvnl            0.03   64       0.00   1.76   
+ DiagoIterAssist diag_subspace     0.27   48       0.01   15.79  
+ Operator        hPsi              1.09   1295     0.00   64.30  
+ Operator        veff_pw           1.06   1295     0.00   62.13  
+ PW_Basis_K      recip2real        0.68   2079     0.00   40.22  
+ PW_Basis_K      real2recip        0.42   1631     0.00   24.53  
+ Operator        nonlocal_pw       0.02   1295     0.00   1.34   
+ ESolver_KS_PW   hamilt2rho_single 1.40   7        0.20   82.49  
+ HSolverPW       solve             1.37   7        0.20   80.89  
+ HSolverPW       solve_psik        1.15   56       0.02   67.53  
+ DiagoCG         diag_once         0.92   56       0.02   54.00  
+ ElecStatePW     psiToRho          0.20   7        0.03   11.71  
+ Stress_PW       cal_stress        0.06   1        0.06   3.45   
+ Stress          stress_nl         0.05   1        0.05   2.84   
+-----------------------------------------------------------------
+
+
+ NAME-------------------------|MEMORY(MB)------------------
+                         total         9.6893
+                        Psi_PW         2.0703
+ -------------   < 1.0 MB has been ignored ----------------
+ ----------------------------------------------------------
+
+ Start  Time  : Fri Apr 17 21:09:24 2026
+ Finish Time  : Fri Apr 17 21:09:26 2026
+ Total  Time  : 0 h 0 mins 2 secs 

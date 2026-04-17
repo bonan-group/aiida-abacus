@@ -1,0 +1,11 @@
+INPUT_PARAMETERS
+pseudo_dir          ../../pp_orb
+nbands              8
+calculation         scf
+suffix              AIIDA
+symmetry            1
+basis_type          pw
+ecutwfc             60
+scf_thr             1e-8
+scf_nmax            100
+cal_stress          1

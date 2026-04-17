@@ -1,0 +1,22 @@
+INPUT_PARAMETERS
+suffix                 AIIDA
+calculation            md
+nbands                 20
+symmetry               0
+pseudo_dir             ../../pp_orb
+orbital_dir            ../../pp_orb
+ecutwfc                30
+scf_thr                1e-5
+scf_nmax               100
+basis_type             lcao
+ks_solver              genelpa
+gamma_only             1
+smearing_method        gaussian
+smearing_sigma         0.001
+mixing_type            broyden
+mixing_beta            0.3
+chg_extrap             second-order
+md_type                nve
+md_nstep               5
+md_dt                  1
+md_tfirst              300

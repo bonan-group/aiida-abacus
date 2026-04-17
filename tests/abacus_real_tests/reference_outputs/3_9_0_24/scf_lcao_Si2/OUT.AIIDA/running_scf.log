@@ -1,0 +1,507 @@
+                                                                                     
+                              ABACUS v3.9.0.24
+
+               Atomic-orbital Based Ab-initio Computation at UStc                    
+
+                     Website: http://abacus.ustc.edu.cn/                             
+               Documentation: https://abacus.deepmodeling.com/                       
+                  Repository: https://github.com/abacusmodeling/abacus-develop       
+                              https://github.com/deepmodeling/abacus-develop         
+                      Commit: 299150a6b (Tue Mar 10 09:46:03 2026 +0800)
+
+    Start Time is Fri Apr 17 21:09:16 2026
+                                                                                     
+ ------------------------------------------------------------------------------------
+
+ READING GENERAL INFORMATION
+                           global_out_dir = OUT.AIIDA/
+                           global_in_card = INPUT
+                               pseudo_dir = /home/bonan/aiida_env/aiida-2.0/devzone/aiida-abacus-more-workflows/tests/abacus_real_tests/pp_orb/
+                              orbital_dir = /home/bonan/aiida_env/aiida-2.0/devzone/aiida-abacus-more-workflows/tests/abacus_real_tests/pp_orb/
+                                    DRANK = 1
+                                    DSIZE = 1
+                                   DCOLOR = 1
+                                    GRANK = 1
+                                    GSIZE = 1
+
+
+ >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+ |                                                                    |
+ |                        #Setup Unitcell#                            |
+ | From the input file and the structure file we know the number of   |
+ | different elments in this unitcell, then we list the detail        |
+ | information for each element, especially the zeta and polar atomic |
+ | orbital number for each element. The total atom number is counted. |
+ | We calculate the nearest atom distance for each atom and show the  |
+ | Cartesian and Direct coordinates for each atom. We list the file   |
+ | address for atomic orbitals. The volume and the lattice vectors    |
+ | in real and reciprocal space is also shown.                        |
+ |                                                                    |
+ <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+ READING UNITCELL INFORMATION
+                       Number of elements = 1
+                  Lattice constant (Bohr) = 10.2
+              Lattice constant (Angstrom) = 5.39761
+
+ READING ATOM TYPE 1
+                               Atom label = Si
+                      L=0, number of zeta = 2
+                      L=1, number of zeta = 2
+                      L=2, number of zeta = 1
+            Number of atoms for this type = 2
+
+                        TOTAL ATOM NUMBER = 2
+
+ CARTESIAN COORDINATES ( UNIT =     10.20000000 Bohr )
+ atom                  x                  y                  z     mag
+   Si     0.000000000000     0.000000000000     0.000000000000  0.0000
+   Si     0.250000000000     0.250000000000     0.250000000000  0.0000
+
+ ATOMIC VELOCITIES
+ atom                 vx                 vy                 vz
+   Si                  0                  0                  0
+   Si                  0                  0                  0
+
+                     Cell volume (Bohr^3) = 265.302
+                        Cell volume (A^3) = 39.3137
+
+ Lattice vectors: (Cartesian coordinate: in unit of a_0)
+                   +0                +0.5                +0.5
+                 +0.5                  +0                +0.5
+                 +0.5                +0.5                  +0
+ Reciprocal vectors: (Cartesian coordinate: in unit of 2 pi/a_0)
+                   -1                  +1                  +1
+                   +1                  -1                  +1
+                   +1                  +1                  -1
+
+ #ENERGY SOLVER# ksdft_lcao
+ RUNNING WITH DEVICE  : CPU / Intel(R) Core(TM) i9-14900KF (x1)
+
+
+ >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+ |                                                                    |
+ |                 #Read Pseudopotentials Files#                      |
+ | ABACUS supports norm-conserving (NC) pseudopotentials for both     |
+ | plane wave basis and numerical atomic orbital basis sets.          |
+ | In addition, ABACUS supports ultrasoft pseudopotentials (USPP)     |
+ | for plane wave basis set.                                          |
+ |                                                                    |
+ <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+                PAO radial cut off (Bohr) = 15
+                     Pseudopotential file = Si.pz-vbc.UPF
+                     Pseudopotential type = NC
+          Exchange-correlation functional = PZ
+                 Nonlocal core correction = 0
+                        Valence electrons = 4
+                                     Lmax = 1
+                           Number of zeta = 2
+                     Number of projectors = 2
+                           L of projector = 0
+                           L of projector = 1
+         Number of pseudo atomic orbitals = 8
+            Electron number of element Si = 4
+      Total electron number of element Si = 8
+          Autoset the number of electrons = 8
+               Occupied electronic states = 4
+                 Number of basis (NLOCAL) = 26
+     Number of electronic states (NBANDS) = 14
+
+
+ >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+ |                                                                    |
+ |           #Setup Plane Waves of Charge/Potential#                  |
+ | Use the kinetic energy cutoff and the lattice vectors to generate  |
+ | the dimensions of FFT grid, which is used to represent the charge  |
+ | density or potential. If USPP is used, a double grid technique     |
+ | is applied.                                                        |
+ |                                                                    |
+ <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+ SETUP PLANE WAVES FOR CHARGE/POTENTIAL
+  Energy cutoff for charge/potential (Ry) = 240
+            FFT grid for charge/potential = [ 36, 36, 36 ]
+           Number of FFT grids this proc. = 46656
+                Division for big FFT grid = [ 4, 4, 4 ]
+      FFT (big) grid for charge/potential = [ 9, 9, 9 ]
+     Number of FFT (big) grids this proc. = 729
+                    Number of plane waves = 16625
+        Number of sticks on FFT x-y plane = 859
+
+ PARALLEL PW FOR CHARGE/POTENTIAL
+     PROC   COLUMNS(POT)             PW
+        1            859          16625
+ --------------- SUM -------------------
+        1            859          16625
+
+                            Number of |g| = 213
+                                  Max |g| = 632
+                                  Min |g| = 0
+
+
+ >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+ |                                                                    |
+ |                      #Symmetry Analysis#                           |
+ | We calculate the norm of 3 vectors and the angles between them,    |
+ | the type of Bravais lattice is given. We can judge if the unticell |
+ | is a primitive cell. Finally we give the point group operation for |
+ | this unitcell. We use the point group operations to perform        |
+ | symmetry analysis on given k-point mesh and the charge density.    |
+ |                                                                    |
+ <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+ LATTICE VECTORS: (CARTESIAN COORDINATE: IN UNIT OF A0)
+                   +0                +0.5                +0.5
+                 +0.5                  +0                +0.5
+                 +0.5                +0.5                  +0
+                     Right-handed lattice = 1
+                                   NORM_A = 0.707107
+                                   NORM_B = 0.707107
+                                   NORM_C = 0.707107
+                           ALPHA (DEGREE) = 60
+                           BETA  (DEGREE) = 60
+                           GAMMA (DEGREE) = 60
+
+ The lattice vectors have been changed (STRU_SIMPLE.cif)
+
+ For optimal symmetric configuration:
+                             BRAVAIS TYPE = 3
+                     BRAVAIS LATTICE NAME = 03. Cubic F (face-centered)
+                                    ibrav = 3
+                                    IBRAV = 3
+                                  BRAVAIS = FACE CENTERED CUBIC
+                       LATTICE CONSTANT A = 1
+
+ Original cell was already a primitive cell.
+              Number of rotation matrices = 48
+              PURE POINT GROUP OPERATIONS = 24
+                   SPACE GROUP OPERATIONS = 48
+                                       C2 = 3
+                                       C3 = 8
+                                       C4 = 0
+                                       C6 = 0
+                                       S1 = 6
+                                       S3 = 0
+                                       S4 = 6
+                                       S6 = 0
+                              POINT GROUP = T_d
+               POINT GROUP IN SPACE GROUP = O_h
+ DONE : SYMMETRY Time : 0.0358662 (SEC)
+
+ DONE : SETUP UNITCELL Time : 0.0358794 (SEC)
+
+
+ >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+ |                                                                    |
+ |                       #Setup K-points#                             |
+ | We setup the k-points according to input parameters.               |
+ | The reduced k-points are set according to symmetry operations.     |
+ | We treat the spin as another set of k-points.                      |
+ |                                                                    |
+ <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+
+ SETUP K-POINTS
+                                    nspin = 1
+                   Input type of k points = Monkhorst-Pack(Gamma)
+                                   nkstot = 64
+                     Right-handed lattice = 1
+
+ For reciprocal-space lattice
+                     Bravais lattice type = 2
+                     Bravais lattice name = 02. Cubic I (body-centered)
+                     Right-handed lattice = 1
+
+ For k-vectors
+                     Bravais lattice type = 2
+                     Bravais lattice name = 02. Cubic I (body-centered)
+                     Right-handed lattice = 1
+              Number of rotation matrices = 48
+           Number of irreducible k-points = 8
+
+ K-POINTS REDUCTION ACCORDING TO SYMMETRY
+     IBZ    DIRECT_X    DIRECT_Y    DIRECT_Z  WEIGHT  ibz2bz
+       1  0.00000000  0.00000000  0.00000000  0.0156       0
+       2  0.25000000  0.25000000  0.25000000  0.1250       1
+       3  0.50000000  0.50000000  0.50000000  0.0625       2
+       4  0.25000000  0.25000000  0.00000000  0.0938       5
+       5  0.50000000  0.50000000  0.25000000  0.3750       6
+       6  0.50000000  0.25000000  0.25000000  0.1875       7
+       7  0.50000000  0.50000000  0.00000000  0.0469      10
+       8  0.50000000  0.25000000 -0.25000000  0.0938      27
+
+                               nkstot now = 8
+ K-POINTS DIRECT COORDINATES
+ KPOINTS    DIRECT_X    DIRECT_Y    DIRECT_Z  WEIGHT
+       1  0.00000000  0.00000000  0.00000000  0.0156
+       2  0.25000000  0.25000000  0.25000000  0.1250
+       3  0.50000000  0.50000000  0.50000000  0.0625
+       4  0.25000000  0.25000000  0.00000000  0.0938
+       5  0.50000000  0.50000000  0.25000000  0.3750
+       6  0.50000000  0.25000000  0.25000000  0.1875
+       7  0.50000000  0.50000000  0.00000000  0.0469
+       8  0.50000000  0.25000000 -0.25000000  0.0938
+
+
+       Number of k-points in this process = 8
+       Minimum distributed k-point number = 8
+
+ K-POINTS CARTESIAN COORDINATES
+ KPOINTS CARTESIAN_X CARTESIAN_Y CARTESIAN_Z  WEIGHT
+       1  0.00000000  0.00000000  0.00000000  0.0312
+       2  0.25000000  0.25000000  0.25000000  0.2500
+       3  0.50000000  0.50000000  0.50000000  0.1250
+       4  0.00000000  0.00000000  0.50000000  0.1875
+       5  0.25000000  0.25000000  0.75000000  0.7500
+       6  0.00000000  0.50000000  0.50000000  0.3750
+       7  0.00000000  0.00000000  1.00000000  0.0938
+       8 -0.50000000  0.00000000  1.00000000  0.1875
+
+
+ K-POINTS DIRECT COORDINATES
+ KPOINTS    DIRECT_X    DIRECT_Y    DIRECT_Z  WEIGHT
+       1  0.00000000  0.00000000  0.00000000  0.0312
+       2  0.25000000  0.25000000  0.25000000  0.2500
+       3  0.50000000  0.50000000  0.50000000  0.1250
+       4  0.25000000  0.25000000  0.00000000  0.1875
+       5  0.50000000  0.50000000  0.25000000  0.7500
+       6  0.50000000  0.25000000  0.25000000  0.3750
+       7  0.50000000  0.50000000  0.00000000  0.0938
+       8  0.50000000  0.25000000 -0.25000000  0.1875
+
+ DONE : INIT K-POINTS Time : 0.116887 (SEC)
+
+ XC:	lda_x	lda_c_pz	
+
+ >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+ |                                                                    |
+ | Setup charge mixing parameters                                     |
+ |                                                                    |
+ <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+                              mixing_type = broyden
+                              mixing_beta = 0.8
+                               mixing_gg0 = 1
+                           mixing_gg0_min = 0.1
+                              mixing_ndim = 8
+
+
+ >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+ |                                                                    |
+ |              #Setup Plane Waves of Wave Functions#                 |
+ | Use the kinetic energy cutoff and the lattice vectors to generate  |
+ | the dimensions of FFT grid, which is used to represent the wave    |
+ | functions of electrons.                                            |
+ |                                                                    |
+ <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+ SETUP PLANE WAVES FOR WAVE FUNCTIONS
+     Energy cutoff for wavefunc (unit:Ry) = 60
+              FFT grid for wave functions = [ 36, 36, 36 ]
+              Number of total plane waves = 2733
+        Number of sticks on FFT x-y plane = 253
+
+ PARALLEL PW FOR WAVE FUNCTIONS
+     PROC   COLUMNS(POT)             PW
+        1            253           2733
+ --------------- sum -------------------
+        1            253           2733
+ DONE : INIT PLANEWAVE Time : 0.120964 (SEC)
+
+                                 init_chg = atomic
+
+ Warning_Memory_Consuming allocated:  ORB::Jl(x) 9.52116 MB
+
+ Warning_Memory_Consuming allocated:  ORB::Jl(x) 14.2817 MB
+ SET NONLOCAL PSEUDOPOTENTIAL PROJECTORS
+ Max number of nonlocal projectors (all elements) = 2
+ DONE : CHARGE Time : 0.186767 (SEC)
+
+ DONE : POTENTIALS Time : 0.187868 (SEC)
+
+ ================================================================
+ SELF-CONSISTENT
+ ================================================================
+
+
+ >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+ |                                                                    |
+ |                    #Search Adjacent Atoms#                         |
+ | Set the adjacent atoms for each atom and set the periodic boundary |
+ | condition for the atoms on real space FFT grid. For k-dependent    |
+ | algorithm, we also need to set the sparse H and S matrix element   |
+ | for each atom.                                                     |
+ |                                                                    |
+ <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+ SETUP SEARCHING RADIUS
+         Orbital max radius cutoff (Bohr) = 8
+  Nonlocal proj. max radius cutoff (Bohr) = 5.01
+                     Search radius (Bohr) = 26
+ SEARCH ADJACENT ATOMS
+                  searching radius (Bohr) = 26
+          Radius (unit: lattice constant) = 2.55
+                      Max number of cells = [ 6, 6, 6 ]
+                      Min number of cells = [ 5, 5, 5 ]
+                 Min coordinates of atoms = [ -5, -5, -5 ]
+                 Max coordinates of atoms = [ 5.25, 5.25, 5.25 ]
+                   Number of needed cells = [ 11, 11, 11 ]
+                                ParaV.nnr = 153114
+ DONE : INIT SCF Time : 0.285686 (SEC)
+
+
+ ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ --> #ION MOVE#         1  #ELEC ITER#         1
+ ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ Electron density deviation 0.170439
+ ----------------------------------------------------------
+      Energy           Rydberg                 eV          
+ ----------------------------------------------------------
+  E_KohnSham     -15.7011359478       -213.6249139633      
+  E_Harris       -15.4309319103       -209.9485994305      
+  E_Fermi        0.4860249600         6.6127088258         
+  E_gap(k)       0.1028943787         1.3999498426         
+ ----------------------------------------------------------
+
+
+ ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ --> #ION MOVE#         1  #ELEC ITER#         2
+ ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ Electron density deviation 0.0346114
+ ----------------------------------------------------------
+      Energy           Rydberg                 eV          
+ ----------------------------------------------------------
+  E_KohnSham     -15.7038760791       -213.6621953616      
+  E_Harris       -15.6454639599       -212.8674577083      
+  E_Fermi        0.5149916852         7.0068213414         
+  E_gap(k)       0.0713524818         0.9708003190         
+ ----------------------------------------------------------
+
+
+ ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ --> #ION MOVE#         1  #ELEC ITER#         3
+ ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ Electron density deviation 0.00296351
+ ----------------------------------------------------------
+      Energy           Rydberg                 eV          
+ ----------------------------------------------------------
+  E_KohnSham     -15.7040507412       -213.6645717613      
+  E_Harris       -15.7030928345       -213.6515387715      
+  E_Fermi        0.5224110223         7.1077666018         
+  E_gap(k)       0.0647246387         0.8806238872         
+ ----------------------------------------------------------
+
+
+ ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ --> #ION MOVE#         1  #ELEC ITER#         4
+ ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ Electron density deviation 0.00013697
+ ----------------------------------------------------------
+      Energy           Rydberg                 eV          
+ ----------------------------------------------------------
+  E_KohnSham     -15.7040508123       -213.6645727283      
+  E_Harris       -15.7037561255       -213.6605633085      
+  E_Fermi        0.5226266617         7.1107005256         
+  E_gap(k)       0.0648421574         0.8822228116         
+ ----------------------------------------------------------
+
+
+ ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ --> #ION MOVE#         1  #ELEC ITER#         5
+ ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ Electron density deviation 1.96192e-05
+ ----------------------------------------------------------
+      Energy           Rydberg                 eV          
+ ----------------------------------------------------------
+  E_KohnSham     -15.7040508162       -213.6645727816      
+  E_Harris       -15.7040897169       -213.6651020531      
+  E_Fermi        0.5226744725         7.1113510257         
+  E_gap(k)       0.0648114788         0.8818054073         
+ ----------------------------------------------------------
+
+
+ ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ --> #ION MOVE#         1  #ELEC ITER#         6
+ ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ Electron density deviation 1.55389e-06
+ ----------------------------------------------------------
+      Energy           Rydberg                 eV          
+ ----------------------------------------------------------
+  E_KohnSham     -15.7040508163       -213.6645727829      
+  E_Harris       -15.7040529022       -213.6646011640      
+  E_Fermi        0.5226698287         7.1112878429         
+  E_gap(k)       0.0648158638         0.8818650683         
+ ----------------------------------------------------------
+
+
+ ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ --> #ION MOVE#         1  #ELEC ITER#         7
+ ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ Electron density deviation 5.01815e-08
+ ----------------------------------------------------------
+      Energy           Rydberg                 eV          
+ ----------------------------------------------------------
+  E_KohnSham     -15.7040508163       -213.6645727831      
+  E_KS(sigma->0) -15.7040455726       -213.6645014393      
+  E_Harris       -15.7040507018       -213.6645712248      
+  E_band         0.8851721541         12.0433850071        
+  E_one_elec     4.8665505718         66.2128173812        
+  E_Hartree      1.1570346261         15.7422636989        
+  E_xc           -4.8278669535        -65.6864997529       
+  E_Ewald        -16.8997585734       -229.9330114227      
+  E_entropy(-TS) -0.0000104873        -0.0001426875        
+  E_descf        0.0000000000         0.0000000000         
+  E_localpp      -5.8367533128        -79.4131028748       
+  E_exx          0.0000000000         0.0000000000         
+  E_Fermi        0.5226695318         7.1112838040         
+  E_gap(k)       0.0648161356         0.8818687671         
+ ----------------------------------------------------------
+
+ #SCF IS CONVERGED#
+ #TOTAL ENERGY# -213.66457278 eV
+ Write eigenvalues and occupations to file: OUT.AIIDA/eig_occ.txt
+
+ --------------------------------------------
+ !FINAL_ETOT_IS -213.6645727830646 eV
+ --------------------------------------------
+
+
+
+TIME STATISTICS
+------------------------------------------------------------------
+   CLASS_NAME           NAME        TIME/s  CALLS   AVG/s  PER/%  
+------------------------------------------------------------------
+                 total              6.35   15       0.42   100.00 
+ Driver          atomic_world       6.35   1        6.35   100.00 
+ ESolver_KS_LCAO before_all_runners 0.18   1        0.18   2.88   
+ Relax_Driver    relax_driver       6.16   1        6.16   97.03  
+ ESolver_KS      runner             6.16   1        6.16   97.03  
+ ESolver_KS_LCAO before_scf         0.10   1        0.10   1.54   
+ GintInfo        init_atoms         0.06   1        0.06   1.02   
+ HSolverLCAO     solve              5.98   7        0.85   94.18  
+ HamiltLCAO      updateHk           3.61   56       0.06   56.76  
+ OperatorLCAO    init               3.45   168      0.02   54.38  
+ Veff            contributeHR       3.08   7        0.44   48.50  
+ Gint            cal_gint_vl        3.08   7        0.44   48.50  
+ Overlap         calculate_SR       0.14   1        0.14   2.18   
+ EKinetic        contributeHR       0.15   7        0.02   2.34   
+ EKinetic        calculate_HR       0.15   1        0.15   2.33   
+ Nonlocal        contributeHR       0.18   7        0.03   2.82   
+ Nonlocal        calculate_HR       0.18   1        0.18   2.76   
+ LCAO_domain     dm2rho             2.31   7        0.33   36.34  
+ Gint            cal_gint_rho       2.31   7        0.33   36.31  
+------------------------------------------------------------------
+
+
+ NAME-------------------------|MEMORY(MB)------------------
+                         total           21.5
+                    ORB::Jl(x)          14.28
+                HamiltLCAO::hR          1.224
+            DensityMatrix::DMR          1.224
+ -------------   < 1.0 MB has been ignored ----------------
+ ----------------------------------------------------------
+
+ Start  Time  : Fri Apr 17 21:09:16 2026
+ Finish Time  : Fri Apr 17 21:09:22 2026
+ Total  Time  : 0 h 0 mins 6 secs 
