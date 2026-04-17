@@ -1,0 +1,42 @@
+default_inputs:
+  base:
+    abacus:
+      parameters:
+        input:
+          cal_force: true
+          cal_stress: true
+  relax:
+    base:
+      abacus:
+        parameters:
+          input:
+            cal_force: true
+            cal_stress: true
+    base_final_scf:
+      abacus:
+        parameters:
+          input:
+            cal_force: true
+            cal_stress: true
+  elastic_settings:
+    norm_strain: 0.01
+    shear_strain: 0.01
+    pre_relax: true
+    relax_internal_positions: true
+    fit_eq_stress: true
+
+default_protocol: balanced
+protocols:
+  balanced:
+    description: "Protocol to perform an elastic tensor calculation at moderate computational cost."
+  stringent:
+    description: "Protocol to perform an elastic tensor calculation at higher precision."
+    elastic_settings:
+      norm_strain: 0.008
+      shear_strain: 0.008
+  fast:
+    description: "Protocol to perform an elastic tensor calculation for testing."
+    elastic_settings:
+      norm_strain: 0.012
+      shear_strain: 0.012
+      pre_relax: false

@@ -245,12 +245,12 @@ def recursive_merge(left: dict, right: dict) -> dict:
 
     return merged
 
-
 def _safe_clone_merge_value(value):
     """Clone merge inputs while preserving AiiDA node semantics."""
     if isinstance(value, orm.Node):
-        clone = getattr(value, "clone", None)
-        return clone() if callable(clone) else value
+        return value
+    if isinstance(value, AttributeDict):
+        return AttributeDict({key: _safe_clone_merge_value(sub_value) for key, sub_value in value.items()})
     if isinstance(value, dict):
         return {key: _safe_clone_merge_value(sub_value) for key, sub_value in value.items()}
     if isinstance(value, list):

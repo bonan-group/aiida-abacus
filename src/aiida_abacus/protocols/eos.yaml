@@ -1,4 +1,23 @@
 default_inputs:
+  base:
+    abacus:
+      parameters:
+        input:
+          cal_force: true
+          cal_stress: true
+  relax:
+    base:
+      abacus:
+        parameters:
+          input:
+            cal_force: true
+            cal_stress: true
+    base_final_scf:
+      abacus:
+        parameters:
+          input:
+            cal_force: true
+            cal_stress: true
   eos_settings:
     scale_start: 0.94
     scale_end: 1.06

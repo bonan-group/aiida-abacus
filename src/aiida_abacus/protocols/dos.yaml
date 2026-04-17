@@ -1,4 +1,23 @@
 default_inputs:
+  base:
+    abacus:
+      parameters:
+        input:
+          cal_force: true
+          cal_stress: true
+  relax:
+    base:
+      abacus:
+        parameters:
+          input:
+            cal_force: true
+            cal_stress: true
+    base_final_scf:
+      abacus:
+        parameters:
+          input:
+            cal_force: true
+            cal_stress: true
   dos_settings:
     dos_kpoints_distance: 0.15
     include_pdos: true

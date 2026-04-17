@@ -25,6 +25,7 @@ dependencies = [
     "aiida-pseudo~=1.7.2",
     "voluptuous",
     "ase",
+    "pymatgen",
     "pydantic",
     "tqdm",
     "click-spinner",
@@ -50,7 +51,6 @@ docs = [
     'myst-parser~=3.0.0',
 ]
 tutorial = [
-    "pymatgen",
     "ase-weas-widget",
     "aiida-vasp",
     "sumo",
@@ -90,6 +90,7 @@ Source = "https://github.com/MCresearch/aiida-abacus"
 "abacus.relax" = "aiida_abacus.workflows.relax:AbacusRelaxWorkChain"
 "abacus.band" = "aiida_abacus.workflows.band:AbacusBandWorkChain"
 "abacus.dos" = "aiida_abacus.workflows.dos:AbacusDosWorkChain"
+"abacus.elastic" = "aiida_abacus.workflows.elastic:AbacusElasticWorkChain"
 "abacus.eos" = "aiida_abacus.workflows.eos:AbacusEosWorkChain"
 
 [project.entry-points."aiida.parsers"]

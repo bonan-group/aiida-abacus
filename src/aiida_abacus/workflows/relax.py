@@ -159,6 +159,7 @@ class AbacusRelaxWorkChain(ProtocolMixin, WorkChain):
         self.ctx.current_cell_volume = None
         self.ctx.is_converged = False
         self.ctx.iteration = 0
+        self.ctx.workchains = []
 
         # Get relax_settings or use defaults
         if "relax_settings" in self.inputs:
@@ -180,10 +181,8 @@ class AbacusRelaxWorkChain(ProtocolMixin, WorkChain):
 
         # Set the meta_convergence and add it to the context
         self.ctx.meta_convergence = self.inputs.meta_convergence.value
-        volume_cannot_change = self.ctx.relax_inputs.abacus.parameters["input"].get("calculation", "scf") in (
-            "scf",
-            "relax",
-        )
+        calculation_type = self.ctx.relax_inputs.abacus.parameters["input"].get("calculation", "scf")
+        volume_cannot_change = calculation_type in ("scf", "relax")
         if self.ctx.meta_convergence and volume_cannot_change:
             self.report(
                 "No change in volume possible for the provided base input parameters. Meta convergence is turned off."
@@ -199,10 +198,10 @@ class AbacusRelaxWorkChain(ProtocolMixin, WorkChain):
                 self.exposed_inputs(AbacusBaseWorkChain, namespace="base_final_scf")
             )
 
-            if self.ctx.relax_inputs.abacus.parameters["input"].get("calculation", "scf") == "scf":
+            if calculation_type != "cell-relax":
                 self.report(
-                    "Work chain will not run final SCF when `calculation` is set to `scf` for the relaxation "
-                    "`AbacusBaseWorkChain`."
+                    "Work chain will only run final SCF for variable-cell relaxations (`cell-relax`). "
+                    f"Skipping final SCF for calculation type `{calculation_type}`."
                 )
                 self.ctx.pop("final_scf_inputs")
 
@@ -219,7 +218,7 @@ class AbacusRelaxWorkChain(ProtocolMixin, WorkChain):
         convergence threshold value and the maximum number of meta convergence iterations is not exceeded.
         """
         if self.ctx.relax_settings.get("perform", True) is False:
-            return False
+            return self.ctx.iteration == 0
 
         return not self.ctx.is_converged and self.ctx.iteration < self.ctx.max_meta_convergence_iterations
 
@@ -274,7 +273,7 @@ class AbacusRelaxWorkChain(ProtocolMixin, WorkChain):
 
         try:
             structure = workchain.outputs.structure
-        except exceptions.NotExistent:
+        except (exceptions.NotExistent, AttributeError):
             # If the calculation is set to 'scf', this is expected, so we are done
             if self.ctx.relax_inputs.abacus.parameters["input"]["calculation"] == "scf":
                 self.ctx.is_converged = True
@@ -290,7 +289,7 @@ class AbacusRelaxWorkChain(ProtocolMixin, WorkChain):
 
         # Set relaxed structure as input structure for next iteration
         self.ctx.current_structure = structure
-        self.ctx.current_number_of_bands = workchain.outputs.misc.get_dict()["number_of_bands"]
+        self.ctx.current_number_of_bands = workchain.outputs.misc.get_dict().get("number_of_bands")
         self.report(f"after iteration {self.ctx.iteration} cell volume of relaxed structure is {curr_cell_volume}")
 
         # After first iteration, simply set the cell volume and restart the next base workchain
@@ -346,6 +345,9 @@ class AbacusRelaxWorkChain(ProtocolMixin, WorkChain):
 
     def results(self):
         """Attach the output parameters and structure of the last workchain to the outputs."""
+        if not self.ctx.workchains:
+            raise RuntimeError("AbacusRelaxWorkChain reached results without running any child workchain.")
+
         if self.ctx.is_converged and self.ctx.iteration <= self.inputs.max_meta_convergence_iterations.value:
             self.report(f"workchain completed after {self.ctx.iteration} iterations")
         else:

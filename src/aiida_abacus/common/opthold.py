@@ -20,7 +20,7 @@ class OptionContainer(BaseModel):
     def aiida_dict(self):
         """Return an ``aiida.orm.Dict`` presentation"""
 
-        python_dict = self.model_dump()
+        python_dict = self.model_dump(mode="json")
         return Dict(dict=python_dict)
 
     @classmethod
@@ -230,6 +230,31 @@ class EosOptions(OptionContainer):
     fit_equation: str = Field(
         description="ASE equation-of-state model used to fit the collected volume-energy points.",
         default="birchmurnaghan",
+    )
+
+
+class ElasticOptions(OptionContainer):
+    """Options for AbacusElasticWorkChain"""
+
+    norm_strain: float = Field(
+        description="Maximum magnitude for independent normal strains.",
+        default=0.01,
+    )
+    shear_strain: float = Field(
+        description="Maximum magnitude for independent shear strains.",
+        default=0.01,
+    )
+    pre_relax: bool = Field(
+        description="Whether to run an initial relaxation before generating strained structures.",
+        default=True,
+    )
+    relax_internal_positions: bool = Field(
+        description="Whether to relax ionic positions for the equilibrium and strained branches.",
+        default=True,
+    )
+    fit_eq_stress: bool = Field(
+        description="Whether to include the equilibrium stress in the tensor fitting step.",
+        default=True,
     )
 
 

@@ -41,6 +41,29 @@ def _write_retrieved_tree(
         destination.write_text(content)
 
 
+MINIMAL_STRU = """ATOMIC_SPECIES
+Si 28.0855 Si.upf
+
+NUMERICAL_ORBITAL
+
+LATTICE_CONSTANT
+1.889726125
+
+LATTICE_VECTORS
+5.1 0.0 0.0
+0.0 5.1 0.0
+0.0 0.0 5.1
+
+ATOMIC_POSITIONS
+Direct
+Si
+0.0
+2
+0.0 0.0 0.0 1 1 1
+0.25 0.25 0.25 1 1 1
+"""
+
+
 def test_parser_pw_si2(calc_with_retrieved, request):
     """Test parsing pw_Si2 calculation (SCF)"""
     _relative_file_path = "test_data/pw_Si2"
@@ -266,6 +289,29 @@ def test_parser_fermi_level(parser_with_retrieved):
     assert -10 < misc["fermi_level"] < 10
 
 
+def test_parser_pw_si2_non_lts_stress_pressure(calc_with_retrieved, request):
+    """Test parsing newer non-LTS SCF output that uses #TOTAL-STRESS and #TOTAL-PRESSURE markers."""
+    file_path = str(pathlib.Path(request.fspath).parent / "test_data/pw_Si2-non-lts")
+    node = calc_with_retrieved(file_path, {})
+    parser = AbacusParser(node)
+    exit_code = parser.parse()
+
+    assert exit_code is None
+    misc = parser.outputs["misc"].get_dict()
+
+    assert misc["converged"] is True
+    assert misc["number_of_bands"] == 14
+    assert misc["fermi_level"] == pytest.approx(6.2945208731)
+    assert misc["force"] == pytest.approx([0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
+    assert misc["stress"] == pytest.approx(
+        [-0.0296363105, 0.0, 0.0, 0.0, -0.0296363105, 0.0, 0.0, 0.0, -0.0296363105]
+    )
+    assert misc["pressure"] == pytest.approx(-0.0296363105)
+    assert misc["pressures"] == pytest.approx([-0.0296363105])
+    assert misc["total_pressure"] == pytest.approx(-0.029636)
+    assert misc["total_pressure_unit"] == "kbar"
+
+
 def test_parser_relax_trajectory(parser_with_retrieved):
     """Test that parser correctly handles relaxation trajectory data"""
     parser, _ = parser_with_retrieved("pw_Si2-relax", parameters={"input": {"calculation": "cell-relax"}})
@@ -369,6 +415,102 @@ def test_parser_returns_ionic_not_converged(calc_with_retrieved, tmp_path):
     assert exit_code is not None
     assert exit_code.status == 303
     assert "misc" not in parser.outputs
+
+
+def test_parser_relax_trajectory_falls_back_to_final_structure(calc_with_retrieved, tmp_path):
+    file_path = tmp_path / "pw_relax_only_final_structure"
+    _write_retrieved_tree(
+        file_path,
+        "cell-relax",
+        "\n".join(
+            [
+                " Volume (A^3) = 39.3137",
+                " NBANDS = 8",
+                " EFERMI = 1.23 eV",
+                " STEP OF RELAXATION : 1",
+                "!FINAL_ETOT_IS -10.0 eV",
+                " Relaxation is converged",
+                " Self-consistent calculation is converged",
+                " Total  Time  :  1.0 s",
+            ]
+        ),
+        extra_files={
+            "OUT.aiida/STRU_ION_D": MINIMAL_STRU,
+        },
+    )
+
+    node = calc_with_retrieved(str(file_path), parameters={"input": {"calculation": "cell-relax"}})
+    parser = AbacusParser(node)
+    exit_code = parser.parse()
+
+    assert exit_code is None
+    assert "trajectory" in parser.outputs
+    trajectory = parser.outputs["trajectory"]
+    assert isinstance(trajectory, orm.TrajectoryData)
+    assert trajectory.get_stepids() == [0]
+    assert trajectory.get_step_structure(0)
+
+
+def test_parser_relax_uses_numbered_snapshot_when_plain_final_structure_is_missing(calc_with_retrieved, tmp_path):
+    file_path = tmp_path / "pw_relax_numbered_final_structure_only"
+    _write_retrieved_tree(
+        file_path,
+        "cell-relax",
+        "\n".join(
+            [
+                " Volume (A^3) = 39.3137",
+                " NBANDS = 8",
+                " EFERMI = 1.23 eV",
+                " STEP OF RELAXATION : 1",
+                "!FINAL_ETOT_IS -10.0 eV",
+                " Relaxation is converged",
+                " Self-consistent calculation is converged",
+                " Total  Time  :  1.0 s",
+            ]
+        ),
+        extra_files={
+            "OUT.aiida/STRU_ION1_D": MINIMAL_STRU,
+        },
+    )
+
+    node = calc_with_retrieved(str(file_path), parameters={"input": {"calculation": "cell-relax"}})
+    parser = AbacusParser(node)
+    exit_code = parser.parse()
+
+    assert exit_code is None
+    assert "structure" in parser.outputs
+    assert "trajectory" in parser.outputs
+    trajectory = parser.outputs["trajectory"]
+    assert isinstance(trajectory, orm.TrajectoryData)
+    assert trajectory.get_stepids() == [0]
+    assert trajectory.get_step_structure(0)
+
+
+def test_parser_relax_without_any_trajectory_snapshot_does_not_crash(calc_with_retrieved, tmp_path):
+    file_path = tmp_path / "pw_relax_without_trajectory_snapshot"
+    _write_retrieved_tree(
+        file_path,
+        "cell-relax",
+        "\n".join(
+            [
+                " Volume (A^3) = 39.3137",
+                " NBANDS = 8",
+                " EFERMI = 1.23 eV",
+                " STEP OF RELAXATION : 1",
+                "!FINAL_ETOT_IS -10.0 eV",
+                " Relaxation is converged",
+                " Self-consistent calculation is converged",
+                " Total  Time  :  1.0 s",
+            ]
+        ),
+    )
+
+    node = calc_with_retrieved(str(file_path), parameters={"input": {"calculation": "cell-relax"}})
+    parser = AbacusParser(node)
+    exit_code = parser.parse()
+
+    assert exit_code is not None
+    assert exit_code.status == 300
 
 
 def test_parser_returns_missing_output_files(calc_with_retrieved, tmp_path):

@@ -35,18 +35,42 @@ class AbacusRawParser(BaseRawParser):
         """
         Parse blocks from output file.
         """
-        # Re pattern to match the block name, unit and content.
-        pattern = re.compile(
-            r"---------+\n TOTAL-(FORCE|STRESS) \(([a-zA-Z/]+)\) *\n------+\n(.*?)\n--------+", flags=re.DOTALL
-        )
-        # First, process all blocks
         all_blocks = []
-        for match in re.findall(pattern, self.content):
-            block_type = match[0]
-            block_unit = match[1]
-            block_content = match[2]
-            lines = [line.strip() for line in block_content.split("\n")]
-            all_blocks.append((block_type, block_unit, lines))
+        index = 0
+        while index < len(self.lines):
+            header = self.lines[index].strip()
+            match = re.match(r"#?TOTAL-(FORCE|STRESS)\s*\(([^)]+)\)#?$", header, flags=re.IGNORECASE)
+            if match is None:
+                index += 1
+                continue
+
+            block_type = match.group(1).upper()
+            block_unit = match.group(2).strip()
+            index += 1
+
+            while index < len(self.lines) and (
+                not self.lines[index].strip()
+                or set(self.lines[index].strip()) == {"-"}
+                or ("Atoms" in self.lines[index] and "Force_" in self.lines[index])
+                or ("Stress_x" in self.lines[index] and "Stress_y" in self.lines[index] and "Stress_z" in self.lines[index])
+            ):
+                index += 1
+
+            block_lines = []
+            while index < len(self.lines):
+                stripped = self.lines[index].strip()
+                if (
+                    not stripped
+                    or set(stripped) == {"-"}
+                    or stripped.startswith("#TOTAL-PRESSURE")
+                    or stripped.startswith("TOTAL-PRESSURE")
+                ):
+                    break
+                block_lines.append(stripped)
+                index += 1
+
+            all_blocks.append((block_type, block_unit, block_lines))
+            continue
 
         all_forces = []
         all_stress = []
@@ -83,34 +107,44 @@ class AbacusRawParser(BaseRawParser):
         energy_ks = []
         scf_iterations = set()
         for line in self.lines:
-            if "TOTAL-pressure" in line:
-                self.results["total_pressure"] = float(line.strip().split()[-2])
-                self.results["total_pressure_unit"] = line.strip().split()[-1]
+            stripped = line.strip()
+            pressure_match = re.search(r"TOTAL-PRESSURE#?.*:\s*([-+0-9.eE]+)\s+([A-Za-z/]+)\s*$", line.strip(), re.IGNORECASE)
+            if pressure_match:
+                self.results["total_pressure"] = float(pressure_match.group(1))
+                self.results["total_pressure_unit"] = pressure_match.group(2)
             elif "!FINAL_ETOT_IS" in line:
                 self.results["total_energy"] = float(line.strip().split()[-2])
             elif "final etot is" in line:
                 self.results["energies"].append(float(line.strip().split()[-2]))
-            elif "NBANDS =" in line:
-                self.results["number_of_bands"] = int(line.strip().split()[-1])
+            elif "NBANDS" in line:
+                nbands_match = re.search(r"NBANDS\)?\s*=\s*(\d+)", stripped)
+                if nbands_match:
+                    self.results["number_of_bands"] = int(nbands_match.group(1))
             elif "EFERMI" in line:
                 self.results["fermi_level"] = float(line.strip().split()[-2])
+            elif "E_Fermi" in line:
+                fermi_match = re.search(r"E_Fermi\s+([-+0-9.eE]+)\s+([-+0-9.eE]+)", stripped)
+                if fermi_match:
+                    self.results["fermi_level"] = float(fermi_match.group(2))
             elif "E_KohnSham" in line:
                 energy_ks.append(float(line.strip().split()[-1]))
-            elif "Volume (A^3) =" in line:
-                self.results["volume"] = float(line.strip().split()[-1])
-            elif "Largest gradient in force is" in line:
-                self.results.setdefault("largest_gradient", []).append(float(line.strip().split()[-2]))
-            elif "Largest gradient is" in line:
-                self.results.setdefault("largest_gradient", []).append(float(line.strip().split()[-1]))
-            elif "Largest gradient in stress is" in line:
-                self.results.setdefault("largest_gradient_stress", []).append(float(line.strip().split()[-2]))
-            elif "STEP OF RELAXATION :" in line or " STEP OF ION RELAXATION : " in line:
-                self.results["relax_steps"] = int(line.strip().split()[-1])
-            elif "ALGORITHM --------------- ION=" in line:
-                match = re.search(r"ION=\s*(\d+)\s+ELEC=\s*(\d+)", line)
-                if match:
-                    self.results["relax_steps"] = int(match.group(1))
-                    scf_iterations.add((int(match.group(1)), int(match.group(2))))
+            else:
+                volume_match = re.search(r"(?:cell\s+)?volume \(A\^3\)\s*=\s*([-+0-9.eE]+)", stripped, re.IGNORECASE)
+                if volume_match:
+                    self.results["volume"] = float(volume_match.group(1))
+                elif "Largest gradient in force is" in line:
+                    self.results.setdefault("largest_gradient", []).append(float(line.strip().split()[-2]))
+                elif "Largest gradient is" in line:
+                    self.results.setdefault("largest_gradient", []).append(float(line.strip().split()[-1]))
+                elif "Largest gradient in stress is" in line:
+                    self.results.setdefault("largest_gradient_stress", []).append(float(line.strip().split()[-2]))
+                elif "STEP OF RELAXATION :" in line or " STEP OF ION RELAXATION : " in line:
+                    self.results["relax_steps"] = int(line.strip().split()[-1])
+                elif "ALGORITHM --------------- ION=" in line:
+                    match = re.search(r"ION=\s*(\d+)\s+ELEC=\s*(\d+)", line)
+                    if match:
+                        self.results["relax_steps"] = int(match.group(1))
+                        scf_iterations.add((int(match.group(1)), int(match.group(2))))
 
         notifications = self.parse_notifications()
         final_scf_state = self._last_notification_name(notifications, {"scf_converged", "scf_not_converged"})

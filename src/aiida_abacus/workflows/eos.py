@@ -1,6 +1,5 @@
 """Workflow for equation-of-state calculations."""
 
-import copy
 import pathlib
 
 import numpy as np
@@ -152,9 +151,7 @@ class AbacusEosWorkChain(ProtocolMixin, WorkChain):
         """Launch one fixed-structure calculation per scaling factor."""
         running = {}
         for label, scale, structure in zip(self.ctx.scale_labels, self.ctx.scale_factors, self.ctx.scaled_structures):
-            inputs = copy.deepcopy(self.ctx.base_inputs)
-            inputs.abacus.structure = structure
-            inputs.metadata.call_link_label = label
+            inputs = _build_base_branch_inputs(self.ctx.base_inputs, structure, label)
             prepared = prepare_process_inputs(AbacusBaseWorkChain, inputs)
             running[label] = self.submit(AbacusBaseWorkChain, **prepared)
             self.report(f"launching AbacusBaseWorkChain<{running[label].pk}> for EOS scale {scale:.4f}")
@@ -214,6 +211,38 @@ def _build_scale_factors(settings):
         scales.append(1.0)
 
     return sorted(set(scales))
+
+
+def _build_base_branch_inputs(base_inputs, structure, label):
+    """Build explicit branch inputs for a base-workchain fan-out branch."""
+    inputs = AttributeDict()
+    inputs.metadata = AttributeDict(dict(base_inputs.metadata))
+    inputs.metadata.call_link_label = label
+    inputs.max_iterations = base_inputs.max_iterations
+
+    inputs.abacus = AttributeDict()
+    inputs.abacus.code = base_inputs.abacus.code
+    inputs.abacus.metadata = AttributeDict(dict(base_inputs.abacus.metadata))
+    inputs.abacus.parameters = base_inputs.abacus.parameters.get_dict()
+    inputs.abacus.pseudos = base_inputs.abacus.pseudos
+    inputs.abacus.structure = structure
+
+    if "settings" in base_inputs.abacus:
+        inputs.abacus.settings = (
+            base_inputs.abacus.settings.get_dict()
+            if hasattr(base_inputs.abacus.settings, "get_dict")
+            else dict(base_inputs.abacus.settings)
+        )
+
+    if "kpoints" in base_inputs:
+        inputs.kpoints = base_inputs.kpoints
+    if "kpoints_distance" in base_inputs:
+        inputs.kpoints_distance = base_inputs.kpoints_distance
+    if "kpoints_force_parity" in base_inputs:
+        inputs.kpoints_force_parity = base_inputs.kpoints_force_parity
+    if "pseudo_family" in base_inputs:
+        inputs.pseudo_family = base_inputs.pseudo_family
+    return inputs
 
 
 @calcfunction

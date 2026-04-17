@@ -165,7 +165,10 @@ class AbacusParser(Parser):
         # TODO: there could be other types that should have a output structure
         if run_type in ["relax", "cell-relax", "md"]:
             # Parse the final structure
-            fname = next(filter(lambda x: "STRU_ION_D" in x, expected_files))
+            fname = _find_relax_structure_file(output_folder, output_suffix)
+            if fname is None:
+                self.logger.error("No relaxation structure snapshot was found in the retrieved files.")
+                return self.exit_codes.ERROR_MISSING_OUTPUT_FILES
             with output_folder.open(fname, "r") as fhandle:
                 parser = StruParser(fhandle)
                 cell, positions, species = parser.parse_structure()
@@ -174,9 +177,9 @@ class AbacusParser(Parser):
                 node.append_atom(position=pos, symbols=symbol)
             self.out("structure", node)
             # Compose trajectory node
-            self.out(
-                "trajectory", compose_trajectory(output_folder, misc_results, self.node.process_class._OUTPUT_SUFFIX)
-            )
+            trajectory = compose_trajectory(output_folder, misc_results, self.node.process_class._OUTPUT_SUFFIX)
+            if trajectory is not None:
+                self.out("trajectory", trajectory)
 
         # Parse the calculation raw parameters
         if self.check_include_node("internal_parameters"):
@@ -210,8 +213,6 @@ class AbacusParser(Parser):
         folder_name = f"OUT.{output_suffix}"
         mandatory = [f"{folder_name}/running_{run_type}.log"]
 
-        if run_type in RELAX_RUN_TYPES:
-            mandatory.append(f"{folder_name}/STRU_ION_D")
         if self.check_include_node("internal_parameters"):
             mandatory.append(f"{folder_name}/INPUT")
         if self.check_include_node("kpoints"):
@@ -310,12 +311,13 @@ def compose_trajectory(output_folder: orm.FolderData, data_dict: dict, output_su
     :return: A orm.TrajectoryData Node.
     """
     folder_name = "OUT." + output_suffix
-    traj_files = [
-        file_name
-        for file_name in output_folder.list_object_names(folder_name)
-        if re.match(r"STRU_ION\d+_D$", file_name)
-    ]
+    traj_files = _list_relax_structure_files(output_folder, output_suffix)
     traj_files.sort(key=lambda name: int(re.search(r"STRU_ION(\d+)_D$", PurePosixPath(name).name).group(1)))
+    if not traj_files:
+        fallback = _find_relax_structure_file(output_folder, output_suffix)
+        if fallback is None:
+            return None
+        traj_files = [PurePosixPath(fallback).name]
     cell_list = []
     positions_list = []
     symbols_list = []
@@ -326,6 +328,8 @@ def compose_trajectory(output_folder: orm.FolderData, data_dict: dict, output_su
         cell_list.append(cell)
         positions_list.append(positions)
         symbols_list.append(species)
+    if not symbols_list:
+        return None
     traj = orm.TrajectoryData()
     traj.set_trajectory(symbols=symbols_list[0], cells=np.array(cell_list), positions=np.array(positions_list))
     # Set additional data
@@ -339,3 +343,33 @@ def compose_trajectory(output_folder: orm.FolderData, data_dict: dict, output_su
         traj.set_array("stresses", np.array(all_stress))
         traj.base.attributes.set("stress_unit", data_dict["stress_unit"])
     return traj
+
+
+def _list_relax_structure_files(output_folder: orm.FolderData, output_suffix: str) -> list[str]:
+    """Return numbered ionic snapshots available in the retrieved OUT folder."""
+    folder_name = "OUT." + output_suffix
+    try:
+        return [
+            file_name
+            for file_name in output_folder.list_object_names(folder_name)
+            if re.match(r"STRU_ION\d+_D$", file_name)
+        ]
+    except FileNotFoundError:
+        return []
+
+
+def _find_relax_structure_file(output_folder: orm.FolderData, output_suffix: str) -> str | None:
+    """Return the best available final relaxation structure path from the retrieved OUT folder."""
+    folder_name = "OUT." + output_suffix
+    try:
+        output_folder.get_object(f"{folder_name}/STRU_ION_D")
+        return f"{folder_name}/STRU_ION_D"
+    except FileNotFoundError:
+        pass
+
+    traj_files = _list_relax_structure_files(output_folder, output_suffix)
+    if not traj_files:
+        return None
+
+    traj_files.sort(key=lambda name: int(re.search(r"STRU_ION(\d+)_D$", PurePosixPath(name).name).group(1)))
+    return f"{folder_name}/{traj_files[-1]}"

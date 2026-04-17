@@ -228,6 +228,26 @@ def test_parse_additional_metrics_from_existing_relax_fixture(data_folder):
     assert len(results["virial"]) == 9
 
 
+def test_parse_non_lts_stress_and_pressure_fixture(data_folder):
+    parser = AbacusRawParser(data_folder / "pw_Si2-non-lts/OUT.aiida/running_scf.log")
+    results = parser.parse()
+
+    assert results["converged"] is True
+    assert results["total_energy"] == pytest.approx(-230.2627734838431479)
+    assert results["number_of_bands"] == 14
+    assert results["fermi_level"] == pytest.approx(6.2945208731)
+    assert results["force"] == pytest.approx([0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
+    assert results["stress"] == pytest.approx(
+        [-0.0296363105, 0.0, 0.0, 0.0, -0.0296363105, 0.0, 0.0, 0.0, -0.0296363105]
+    )
+    assert results["pressure"] == pytest.approx(-0.0296363105)
+    assert results["total_pressure"] == pytest.approx(-0.029636)
+    assert results["total_pressure_unit"] == "kbar"
+    assert results["volume"] == pytest.approx(40.9113)
+    assert results["virial"] is not None
+    assert len(results["virial"]) == 9
+
+
 def test_timejson_parser(data_folder):
     parser = TimejsonParser(data_folder / "pw_Si2/time.json")
     results = parser.parse()

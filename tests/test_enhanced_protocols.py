@@ -17,6 +17,7 @@ from aiida_abacus.protocols.generator import (
 )
 from aiida_abacus.workflows.band import AbacusBandWorkChain
 from aiida_abacus.workflows.base import AbacusBaseWorkChain
+from aiida_abacus.workflows.elastic import AbacusElasticWorkChain
 from aiida_abacus.workflows.relax import AbacusRelaxWorkChain
 
 
@@ -262,6 +263,10 @@ def test_protocol_filepath_resolution():
     assert isinstance(band_filepath, Path)
     assert band_filepath.exists()
 
+    elastic_filepath = AbacusElasticWorkChain.get_protocol_filepath()
+    assert isinstance(elastic_filepath, Path)
+    assert elastic_filepath.exists()
+
 
 def test_protocol_tags():
     """Test that protocol tags are correctly set"""
@@ -269,3 +274,4 @@ def test_protocol_tags():
     assert AbacusBaseWorkChain._protocol_tag == "base"
     assert AbacusRelaxWorkChain._protocol_tag == "relax"
     assert AbacusBandWorkChain._protocol_tag == "band"
+    assert AbacusElasticWorkChain._protocol_tag == "elastic"
