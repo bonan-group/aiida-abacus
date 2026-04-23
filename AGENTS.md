@@ -7,18 +7,18 @@ Core plugin code lives in `src/aiida_abacus/`. Key areas are `calculations.py` f
 Use the repository-local virtual environment at `.venv/bin/activate` for development.
 Activate the project environment first with `source .venv/bin/activate`, or use `uv run` directly.
 If another repo's virtualenv is already activated in the shell, run `deactivate` first or unset `VIRTUAL_ENV` and `VIRTUAL_ENV_PROMPT` before using this repo's environment.
-Use `uv` for local setup and execution, for example `uv sync --group dev-tools` or `uv sync --group testing`.
+Use `uv` for local setup and execution, for example `uv sync --group dev` (includes testing + linting).
 Prefer `uv run python -m pytest -v` for the default test suite, especially if shell activation state may be contaminated by a neighboring environment.
 Use `uv run python -m coverage run -m pytest` followed by `uv run python -m coverage report` for coverage.
 Use `uv run ruff format --check .` and `uv run ruff check .` for formatting and lint checks, or `uv run ruff format .` and `uv run ruff check --fix .` to apply safe fixes.
-Build docs with `uv sync --group docs-build` and `uv run sphinx-build -b html docs/source docs/build/html`.
+Build docs with `uv sync --group docs` and `uv run sphinx-build -b html docs/source docs/build/html`.
 Build distributions with `uv build`.
 
 ## Coding Style & Naming Conventions
 Target Python 3.10+ and follow the Ruff configuration in `pyproject.toml`: 120-character lines, double quotes, and import sorting through `ruff`. Use 4-space indentation. Keep module names lowercase with underscores. Follow existing patterns such as `AbacusCalculation` for classes, `test_parser.py` for tests, and protocol files like `base.yaml` or `relax.yaml`. Keep new logic near the relevant AiiDA entry point instead of adding broad utility modules.
 
 ## Testing Guidelines
-Pytest is the test runner. The repository is configured to discover `test_*.py` and `example_*.py`. Add focused unit tests beside the nearest existing suite, for example parser changes in `tests/test_parser.py` or workflow changes in `tests/test_builder_updates.py`. Prefer small fixtures from `tests/test_data/`. Run a targeted test first, then the broader suite before opening a PR.
+Pytest is the test runner, configured with `testpaths = ["tests"]` to only collect from the `tests/` directory. Add focused unit tests beside the nearest existing suite, for example parser changes in `tests/test_parser.py` or workflow changes in `tests/test_builder_updates.py`. Prefer small fixtures from `tests/test_data/`. Run a targeted test first, then the broader suite before opening a PR.
 When running scripts outside of pytest that interact with AiiDA (e.g. example scripts, manual test scripts), always set `AIIDA_PATH=<repo_root>` to use the local AiiDA profile instead of the production one.
 
 ## Commit & Pull Request Guidelines

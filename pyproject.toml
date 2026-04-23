@@ -39,13 +39,13 @@ docs = [
     "sphinxemoji",
     "furo",
     "markupsafe>=2.1.1",
-    'sphinx-copybutton~=0.5.2',
-    'sphinx-book-theme~=1.0.1',
-    'sphinx-click~=4.4.0',
-    'sphinx-design~=0.6.1',
-    'sphinxcontrib-details-directive~=0.1.0',
-    'sphinx-autoapi~=3.0.0',
-    'myst-parser~=3.0.0',
+    "sphinx-copybutton~=0.5.2",
+    "sphinx-book-theme~=1.0.1",
+    "sphinx-click~=4.4.0",
+    "sphinx-design~=0.6.1",
+    "sphinxcontrib-details-directive~=0.1.0",
+    "sphinx-autoapi~=3.0.0",
+    "myst-parser~=3.0.0",
 ]
 tutorial = [
     "ase-weas-widget",
@@ -53,12 +53,6 @@ tutorial = [
     "sumo",
 ]
 dev = [
-    "pgtest~=1.3,>=1.3.1",
-    "coverage~=7.0",
-    "pytest~=7.0",
-    "pytest-cov~=4.1",
-    "ipdb",
-    "pre-commit~=3.5",
     "pgtest~=1.3,>=1.3.1",
     "coverage~=7.0",
     "pytest~=7.0",
@@ -87,6 +81,7 @@ Source = "https://github.com/MCresearch/aiida-abacus"
 "abacus.band" = "aiida_abacus.workflows.band:AbacusBandWorkChain"
 "abacus.dos" = "aiida_abacus.workflows.dos:AbacusDosWorkChain"
 "abacus.elastic" = "aiida_abacus.workflows.elastic:AbacusElasticWorkChain"
+"abacus.converge" = "aiida_abacus.workflows.converge:AbacusConvergenceWorkChain"
 "abacus.eos" = "aiida_abacus.workflows.eos:AbacusEosWorkChain"
 
 [project.entry-points."aiida.parsers"]
@@ -100,7 +95,8 @@ Source = "https://github.com/MCresearch/aiida-abacus"
 
 [tool.pytest.ini_options]
 # Configuration for [pytest](https://docs.pytest.org)
-python_files = "test_*.py example_*.py"
+testpaths = ["tests"]
+python_files = "test_*.py"
 addopts = "--pdbcls=IPython.terminal.debugger:TerminalPdb"
 filterwarnings = [
     "ignore::DeprecationWarning:aiida:",
@@ -117,6 +113,7 @@ source = ["src/aiida_abacus"]
 
 [tool.ruff]
 line-length = 120
+extend-exclude = ["examples"]
 
 [tool.ruff.lint]
 ignore = [
@@ -128,7 +125,8 @@ ignore = [
   'PLR0915',  # Too many statements
   'PLR2004',  # Magic value used in comparison
   'RUF005',  # Consider iterable unpacking instead of concatenation
-  'RUF012'  # Mutable class attributes should be annotated with `typing.ClassVar`
+  'RUF012',  # Mutable class attributes should be annotated with `typing.ClassVar`
+  'PLC0415',  # Import should be at top-level (deferred imports are intentional)
 ]
 select = [
   'E',  # pydocstyle

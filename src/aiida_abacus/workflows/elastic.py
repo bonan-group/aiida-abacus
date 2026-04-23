@@ -407,7 +407,9 @@ def fit_elastic_tensor(branch_results, elastic_settings):
 
     try:
         strains = [Strain.from_dict(entry["strain"]) for entry in payload["branches"]]
-        deformed_stresses = [Stress(-0.1 * np.array(entry["stress_kbar"]).reshape(3, 3)) for entry in payload["branches"]]
+        deformed_stresses = [
+            Stress(-0.1 * np.array(entry["stress_kbar"]).reshape(3, 3)) for entry in payload["branches"]
+        ]
         eq_stress = Stress(-0.1 * np.array(payload["equilibrium"]["stress_kbar"]).reshape(3, 3))
         tensor = ElasticTensor.from_independent_strains(
             strains,

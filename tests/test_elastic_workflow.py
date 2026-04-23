@@ -80,7 +80,9 @@ def test_elastic_builder_from_protocol(si_structure, abacus_code, pseudo_family_
     assert builder.relax.base_final_scf.pseudo_family.value == "apns-efficiency-test"
 
 
-def test_generate_strained_structures_creates_reference_set(aiida_profile_clean, abacus_inputs, abacus_kpoints, si_structure):
+def test_generate_strained_structures_creates_reference_set(
+    aiida_profile_clean, abacus_inputs, abacus_kpoints, si_structure
+):
     workchain = _instantiate_elastic_workchain(abacus_inputs, abacus_kpoints, si_structure)
 
     workchain.generate_strained_structures()

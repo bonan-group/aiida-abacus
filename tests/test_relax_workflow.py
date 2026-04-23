@@ -108,9 +108,7 @@ def test_setup_skips_final_scf_for_positions_only_relaxation(
     assert workchain.ctx.meta_convergence is False
 
 
-def test_setup_skips_final_scf_for_scf_only(
-    aiida_profile_clean, abacus_inputs, abacus_kpoints, si_structure
-):
+def test_setup_skips_final_scf_for_scf_only(aiida_profile_clean, abacus_inputs, abacus_kpoints, si_structure):
     workchain = _instantiate_relax_workchain_with_calculation(abacus_inputs, abacus_kpoints, si_structure, "scf")
 
     assert "final_scf_inputs" not in workchain.ctx

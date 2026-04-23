@@ -76,7 +76,9 @@ def test_run_eos_submits_all_scaled_structures(aiida_profile_clean, abacus_input
     assert len(captured) == 5
     assert all(process is not None for process, _ in captured)
     assert captured[0][1]["metadata"]["call_link_label"] == "eos_workchain_00"
-    assert captured[-1][1]["abacus"]["structure"].get_cell_volume() > captured[0][1]["abacus"]["structure"].get_cell_volume()
+    vol_last = captured[-1][1]["abacus"]["structure"].get_cell_volume()
+    vol_first = captured[0][1]["abacus"]["structure"].get_cell_volume()
+    assert vol_last > vol_first
 
 
 def test_inspect_eos_collects_branch_results(aiida_profile_clean, abacus_inputs, abacus_kpoints):

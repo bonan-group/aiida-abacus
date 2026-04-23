@@ -233,6 +233,43 @@ class EosOptions(OptionContainer):
     )
 
 
+class ConvOptions(OptionContainer):
+    """Options for AbacusConvergenceWorkChain"""
+
+    cutoff_start: float = Field(
+        description="Starting plane-wave cutoff energy in Ry for the convergence sweep.",
+        default=20.0,
+    )
+    cutoff_stop: float = Field(
+        description="Final plane-wave cutoff energy in Ry for the convergence sweep.",
+        default=80.0,
+    )
+    cutoff_step: float = Field(
+        description="Increment in Ry between cutoff energy values in the sweep.",
+        default=10.0,
+    )
+    kspacing_start: float = Field(
+        description="Starting k-point spacing in 1/Angstrom (coarse) for the convergence sweep.",
+        default=0.50,
+    )
+    kspacing_stop: float = Field(
+        description="Final k-point spacing in 1/Angstrom (fine) for the convergence sweep.",
+        default=0.10,
+    )
+    kspacing_step: float = Field(
+        description="Decrement in 1/Angstrom between k-point spacing values in the sweep.",
+        default=0.05,
+    )
+    cutoff_kconv: float = Field(
+        description="Fixed cutoff energy in Ry used for k-point spacing convergence tests.",
+        default=60.0,
+    )
+    kspacing_cutconv: float = Field(
+        description="Fixed k-point spacing in 1/Angstrom used for cutoff energy convergence tests.",
+        default=0.15,
+    )
+
+
 class ElasticOptions(OptionContainer):
     """Options for AbacusElasticWorkChain"""
 

@@ -9,14 +9,12 @@ import pytest
 
 from aiida_abacus.commands.pseudos import (
     SOURCE_CONFIGS,
-    SourceConfig,
     _extract_rcut_from_orb_name,
     _make_label,
     _reorganize_github_orbitals,
     _select_orbital_by_rcut,
     _set_group_extras,
 )
-
 
 # ---------------------------------------------------------------------------
 # Unit tests for helper functions
@@ -104,7 +102,6 @@ class TestSetGroupExtras:
     """Tests for _set_group_extras."""
 
     def test_sets_extras(self, aiida_profile):
-        from aiida.orm import QueryBuilder
 
         from aiida_abacus.group.orb_group import AtomicOrbitalCollection
 

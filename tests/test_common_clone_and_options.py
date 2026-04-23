@@ -1,6 +1,3 @@
-from aiida import orm
-from aiida.common import AttributeDict
-
 from aiida_abacus.common import RelaxType
 from aiida_abacus.common.opthold import RelaxOptions
 

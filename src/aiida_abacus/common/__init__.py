@@ -245,6 +245,7 @@ def recursive_merge(left: dict, right: dict) -> dict:
 
     return merged
 
+
 def _safe_clone_merge_value(value):
     """Clone merge inputs while preserving AiiDA node semantics."""
     if isinstance(value, orm.Node):

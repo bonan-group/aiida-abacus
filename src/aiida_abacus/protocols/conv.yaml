@@ -1,0 +1,43 @@
+default_inputs:
+  conv_settings:
+    cutoff_start: 20.0
+    cutoff_stop: 80.0
+    cutoff_step: 10.0
+    kspacing_start: 0.50
+    kspacing_stop: 0.10
+    kspacing_step: 0.05
+    cutoff_kconv: 60.0
+    kspacing_cutconv: 0.15
+  base:
+    abacus:
+      parameters:
+        input:
+          cal_force: true
+          cal_stress: true
+
+default_protocol: balanced
+protocols:
+  balanced:
+    description: 'Test convergence of plane-wave cutoff and k-point spacing at moderate resolution.'
+  stringent:
+    description: 'Test convergence with finer steps and wider ranges for high-precision calculations.'
+    conv_settings:
+      cutoff_start: 20.0
+      cutoff_stop: 100.0
+      cutoff_step: 5.0
+      kspacing_start: 0.50
+      kspacing_stop: 0.05
+      kspacing_step: 0.02
+      cutoff_kconv: 80.0
+      kspacing_cutconv: 0.10
+  fast:
+    description: 'Test convergence with coarse steps for quick testing.'
+    conv_settings:
+      cutoff_start: 30.0
+      cutoff_stop: 70.0
+      cutoff_step: 20.0
+      kspacing_start: 0.40
+      kspacing_stop: 0.15
+      kspacing_step: 0.10
+      cutoff_kconv: 50.0
+      kspacing_cutconv: 0.20

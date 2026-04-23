@@ -303,9 +303,7 @@ def test_parser_pw_si2_non_lts_stress_pressure(calc_with_retrieved, request):
     assert misc["number_of_bands"] == 14
     assert misc["fermi_level"] == pytest.approx(6.2945208731)
     assert misc["force"] == pytest.approx([0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
-    assert misc["stress"] == pytest.approx(
-        [-0.0296363105, 0.0, 0.0, 0.0, -0.0296363105, 0.0, 0.0, 0.0, -0.0296363105]
-    )
+    assert misc["stress"] == pytest.approx([-0.0296363105, 0.0, 0.0, 0.0, -0.0296363105, 0.0, 0.0, 0.0, -0.0296363105])
     assert misc["pressure"] == pytest.approx(-0.0296363105)
     assert misc["pressures"] == pytest.approx([-0.0296363105])
     assert misc["total_pressure"] == pytest.approx(-0.029636)

@@ -52,7 +52,11 @@ class AbacusRawParser(BaseRawParser):
                 not self.lines[index].strip()
                 or set(self.lines[index].strip()) == {"-"}
                 or ("Atoms" in self.lines[index] and "Force_" in self.lines[index])
-                or ("Stress_x" in self.lines[index] and "Stress_y" in self.lines[index] and "Stress_z" in self.lines[index])
+                or (
+                    "Stress_x" in self.lines[index]
+                    and "Stress_y" in self.lines[index]
+                    and "Stress_z" in self.lines[index]
+                )
             ):
                 index += 1
 
@@ -108,7 +112,9 @@ class AbacusRawParser(BaseRawParser):
         scf_iterations = set()
         for line in self.lines:
             stripped = line.strip()
-            pressure_match = re.search(r"TOTAL-PRESSURE#?.*:\s*([-+0-9.eE]+)\s+([A-Za-z/]+)\s*$", line.strip(), re.IGNORECASE)
+            pressure_match = re.search(
+                r"TOTAL-PRESSURE#?.*:\s*([-+0-9.eE]+)\s+([A-Za-z/]+)\s*$", line.strip(), re.IGNORECASE
+            )
             if pressure_match:
                 self.results["total_pressure"] = float(pressure_match.group(1))
                 self.results["total_pressure_unit"] = pressure_match.group(2)
@@ -185,7 +191,9 @@ class AbacusRawParser(BaseRawParser):
             self.results["pressure"] = self.results.get("total_pressure")
 
         if volume is not None and self.results["stresses"]:
-            virials = [(np.array(stress) * volume * KBAR_TO_EV_PER_ANGSTROM3).tolist() for stress in self.results["stresses"]]
+            virials = [
+                (np.array(stress) * volume * KBAR_TO_EV_PER_ANGSTROM3).tolist() for stress in self.results["stresses"]
+            ]
             self.results["virials"] = virials
             self.results["virial"] = virials[-1]
         else:
